@@ -23,38 +23,45 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.core.Ordered;
 
 import com.netflix.config.ConfigurationManager;
 
 import io.servicecomb.config.archaius.sources.MicroserviceConfigLoader;
+import io.servicecomb.foundation.test.scaffolding.config.ArchaiusUtils;
+import mockit.Deencapsulation;
 
 public class TestConfigurationSpringInitializer {
-    @BeforeClass
-    public static void classSetup() {
-        ArchaiusUtils.resetConfig();
-    }
+  @BeforeClass
+  public static void classSetup() {
+    ArchaiusUtils.resetConfig();
+  }
 
-    @AfterClass
-    public static void classTeardown() {
-        ArchaiusUtils.resetConfig();
-    }
+  @AfterClass
+  public static void classTeardown() {
+    ArchaiusUtils.resetConfig();
+  }
 
-    @Test
-    public void testAll() {
-        new ConfigurationSpringInitializer();
+  @Test
+  public void testAll() {
+    ConfigurationSpringInitializer configurationSpringInitializer = new ConfigurationSpringInitializer();
 
-        Object o = ConfigUtil.getProperty("zq");
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> listO = (List<Map<String, Object>>) o;
-        Assert.assertEquals(3, listO.size());
-        Assert.assertEquals(null, ConfigUtil.getProperty("notExist"));
+    Assert.assertEquals(Ordered.LOWEST_PRECEDENCE / 2, configurationSpringInitializer.getOrder());
+    Assert.assertEquals(true,
+        Deencapsulation.getField(configurationSpringInitializer, "ignoreUnresolvablePlaceholders"));
 
-        MicroserviceConfigLoader loader = ConfigUtil.getMicroserviceConfigLoader();
-        Assert.assertNotNull(loader);
+    Object o = ConfigUtil.getProperty("zq");
+    @SuppressWarnings("unchecked")
+    List<Map<String, Object>> listO = (List<Map<String, Object>>) o;
+    Assert.assertEquals(3, listO.size());
+    Assert.assertEquals(null, ConfigUtil.getProperty("notExist"));
 
-        Configuration instance = ConfigurationManager.getConfigInstance();
-        ConfigUtil.installDynamicConfig();
-        // must not reinstall
-        Assert.assertEquals(instance, ConfigurationManager.getConfigInstance());
-    }
+    MicroserviceConfigLoader loader = ConfigUtil.getMicroserviceConfigLoader();
+    Assert.assertNotNull(loader);
+
+    Configuration instance = ConfigurationManager.getConfigInstance();
+    ConfigUtil.installDynamicConfig();
+    // must not reinstall
+    Assert.assertEquals(instance, ConfigurationManager.getConfigInstance());
+  }
 }

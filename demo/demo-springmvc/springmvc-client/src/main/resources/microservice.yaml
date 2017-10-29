@@ -5,7 +5,21 @@ service_description:
 cse:
   service:
     registry:
-      address: http://127.0.0.1:9980
+      address: http://127.0.0.1:30100
+      client:
+        timeout:
+          idle: 60
+          watch: 60
+      instance:
+        healthCheck:
+          interval: 3
+        pull:
+          interval: 10
+        watch: false
+      autodiscovery: true
+
+  references:
+    version-rule: 0+
   handler:
     chain:
       Consumer:
@@ -14,10 +28,37 @@ cse:
     enabled: true
     samplingRate: 0.5
   loadbalance:
+    NFLoadBalancerRuleClassName: com.netflix.loadbalancer.WeightedResponseTimeRule
     retryEnabled: true
     retryOnSame: 1
     retryOnNext: 1
-      
+    serverListFilters: zoneaware
+    serverListFilter:
+      zoneaware:
+        className: io.servicecomb.loadbalance.filter.ZoneAwareServerListFilterExt
+  fallbackpolicy:
+    Consumer:
+      springmvc:
+        codeFirst:
+          fallbackFromCache:
+            policy: fromCache
+          fallbackReturnNull:
+            policy: returnNull
+          fallbackThrowException:
+            policy: throwException
+          fallbackForce:
+            policy: mycustom
+  fallback:
+    Consumer:
+      springmvc:
+        codeFirst:
+          fallbackForce:
+            force: true
+  datacenter:
+    name: myDC
+    region: my-Region
+    availableZone: my-Zone
+
 #########SSL options
 ssl.protocols: TLSv1.2
 ssl.authPeer: true

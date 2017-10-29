@@ -18,50 +18,59 @@ package io.servicecomb.common.rest.codec.param;
 
 import java.lang.reflect.Type;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+
 import io.servicecomb.common.rest.codec.RestClientRequest;
 import io.servicecomb.common.rest.codec.RestObjectMapper;
-import io.servicecomb.common.rest.codec.RestServerRequest;
-
 import io.swagger.models.parameters.Parameter;
 
 public class CookieProcessorCreator implements ParamValueProcessorCreator {
-    public static final String PARAMTYPE = "cookie";
+  public static final String PARAMTYPE = "cookie";
 
-    public static class CookieProcessor extends AbstractParamProcessor {
-        public CookieProcessor(String paramPath, JavaType targetType) {
-            super(paramPath, targetType);
-        }
-
-        @Override
-        public Object getValue(RestServerRequest request) throws Exception {
-            String param = request.getCookieParam(paramPath);
-            if (param == null) {
-                return null;
-            }
-
-            return convertValue(param, targetType);
-        }
-
-        @Override
-        public void setValue(RestClientRequest clientRequest, Object arg) throws Exception {
-            clientRequest.addCookie(paramPath, RestObjectMapper.INSTANCE.convertToString(arg));
-        }
-
-        @Override
-        public String getProcessorType() {
-            return PARAMTYPE;
-        }
-    }
-
-    public CookieProcessorCreator() {
-        ParamValueProcessorCreatorManager.INSTANCE.register(PARAMTYPE, this);
+  public static class CookieProcessor extends AbstractParamProcessor {
+    public CookieProcessor(String paramPath, JavaType targetType) {
+      super(paramPath, targetType);
     }
 
     @Override
-    public ParamValueProcessor create(Parameter parameter, Type genericParamType) {
-        JavaType targetType = TypeFactory.defaultInstance().constructType(genericParamType);
-        return new CookieProcessor(parameter.getName(), targetType);
+    public Object getValue(HttpServletRequest request) throws Exception {
+      Cookie[] cookies = request.getCookies();
+      if (cookies == null) {
+        return null;
+      }
+
+      String value = null;
+      for (Cookie cookie : cookies) {
+        if (paramPath.equals(cookie.getName())) {
+          value = cookie.getValue();
+        }
+      }
+
+      return convertValue(value, targetType);
     }
+
+    @Override
+    public void setValue(RestClientRequest clientRequest, Object arg) throws Exception {
+      clientRequest.addCookie(paramPath, RestObjectMapper.INSTANCE.convertToString(arg));
+    }
+
+    @Override
+    public String getProcessorType() {
+      return PARAMTYPE;
+    }
+  }
+
+  public CookieProcessorCreator() {
+    ParamValueProcessorCreatorManager.INSTANCE.register(PARAMTYPE, this);
+  }
+
+  @Override
+  public ParamValueProcessor create(Parameter parameter, Type genericParamType) {
+    JavaType targetType = TypeFactory.defaultInstance().constructType(genericParamType);
+    return new CookieProcessor(parameter.getName(), targetType);
+  }
 }

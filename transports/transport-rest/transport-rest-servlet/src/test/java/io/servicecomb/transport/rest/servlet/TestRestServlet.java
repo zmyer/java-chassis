@@ -16,9 +16,12 @@
 
 package io.servicecomb.transport.rest.servlet;
 
+import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.ws.Holder;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -28,44 +31,44 @@ import org.mockito.Mockito;
 
 import io.servicecomb.core.CseContext;
 import io.servicecomb.core.transport.TransportManager;
-import io.servicecomb.transport.rest.servlet.common.MockUtil;
+import mockit.Deencapsulation;
+import mockit.Mock;
+import mockit.MockUp;
 
 public class TestRestServlet {
-    private RestServlet restservlet = null;
+  private RestServlet restservlet = null;
 
-    private HttpServletRequest request = null;
+  @Before
+  public void setUp() throws Exception {
+    restservlet = new RestServlet();
 
-    private HttpServletResponse response = null;
+    CseContext.getInstance().setTransportManager(Mockito.mock(TransportManager.class));
+  }
 
-    @Before
-    public void setUp() throws Exception {
-        restservlet = new RestServlet();
-        request = Mockito.mock(HttpServletRequest.class);
-        response = Mockito.mock(HttpServletResponse.class);
+  @After
+  public void tearDown() throws Exception {
+    restservlet = null;
+  }
 
-        CseContext.getInstance().setTransportManager(Mockito.mock(TransportManager.class));
-    }
+  @Test
+  public void testInit() throws ServletException {
+    restservlet.init();
+    Assert.assertTrue(true);
+  }
 
-    @After
-    public void tearDown() throws Exception {
-        restservlet = null;
-    }
+  // useless, but for coverage
+  @Test
+  public void testService() throws ServletException, IOException {
+    Holder<Boolean> holder = new Holder<>();
+    ServletRestDispatcher servletRestServer = new MockUp<ServletRestDispatcher>() {
+      @Mock
+      void service(HttpServletRequest request, HttpServletResponse response) {
+        holder.value = true;
+      }
+    }.getMockInstance();
 
-    @Test
-    public void testInit() throws ServletException {
-        restservlet.init();
-        Assert.assertTrue(true);
-    }
-
-    @Test
-    public void testService() {
-        boolean status = true;
-        try {
-            MockUtil.getInstance().mockServletRestServer();
-            restservlet.service(request, response);
-        } catch (Exception e) {
-            status = false;
-        }
-        Assert.assertTrue(status);
-    }
+    Deencapsulation.setField(restservlet, "servletRestServer", servletRestServer);
+    restservlet.service(null, null);
+    Assert.assertTrue(holder.value);
+  }
 }

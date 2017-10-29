@@ -16,14 +16,6 @@
 
 package io.servicecomb.common.rest.definition;
 
-import io.servicecomb.common.rest.codec.produce.ProduceProcessor;
-import io.servicecomb.common.rest.codec.produce.ProduceProcessorManager;
-import io.servicecomb.common.rest.definition.path.PathRegExp;
-import io.servicecomb.common.rest.definition.path.URLPathBuilder;
-import io.servicecomb.core.definition.OperationMeta;
-import io.swagger.models.Operation;
-import io.swagger.models.Swagger;
-import io.swagger.models.parameters.Parameter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -31,235 +23,227 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.servicecomb.common.rest.codec.produce.ProduceProcessor;
+import io.servicecomb.common.rest.codec.produce.ProduceProcessorManager;
+import io.servicecomb.common.rest.definition.path.PathRegExp;
+import io.servicecomb.common.rest.definition.path.URLPathBuilder;
+import io.servicecomb.core.definition.OperationMeta;
+import io.servicecomb.foundation.vertx.http.HttpServletRequestEx;
+import io.swagger.models.Operation;
+import io.swagger.models.Swagger;
+import io.swagger.models.parameters.Parameter;
+import io.vertx.ext.web.impl.Utils;
+
 public class RestOperationMeta {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RestOperationMeta.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RestOperationMeta.class);
 
-    private static final String ACCEPT_TYPE_SEPARATER = ",";
+  protected OperationMeta operationMeta;
 
-    private static final String ACCEPT_TYPE_INNER_SEPARATER = ";";
+  protected List<String> produces;
 
-    private static final String MEDIATYPE_INNER_SLASH = "/";
+  protected boolean formData;
 
-    protected OperationMeta operationMeta;
+  protected List<RestParam> paramList = new ArrayList<>();
 
-    protected List<String> produces;
+  // key为参数名
+  protected Map<String, RestParam> paramMap = new LinkedHashMap<>();
 
-    protected List<RestParam> paramList = new ArrayList<>();
+  // key为数据类型，比如json之类
+  private Map<String, ProduceProcessor> produceProcessorMap = new HashMap<>();
 
-    // key为参数名
-    protected Map<String, RestParam> paramMap = new LinkedHashMap<>();
+  // 不一定等于mgr中的default，因为本operation可能不支持mgr中的default
+  private ProduceProcessor defaultProcessor;
 
-    // key为数据类型，比如json之类
-    private Map<String, ProduceProcessor> produceProcessorMap = new HashMap<>();
+  protected String absolutePath;
 
-    // 不一定等于mgr中的default，因为本operation可能不支持mgr中的default
-    private ProduceProcessor defaultProcessor;
+  protected PathRegExp absolutePathRegExp;
 
-    protected String absolutePath;
+  // 快速构建URL path
+  private URLPathBuilder pathBuilder;
 
-    protected PathRegExp absolutePathRegExp;
+  public void init(OperationMeta operationMeta) {
+    this.operationMeta = operationMeta;
 
-    // 快速构建URL path
-    private URLPathBuilder pathBuilder;
-
-    public void init(OperationMeta operationMeta) {
-        this.operationMeta = operationMeta;
-
-        Swagger swagger = operationMeta.getSchemaMeta().getSwagger();
-        Operation operation = operationMeta.getSwaggerOperation();
-        this.produces = operation.getProduces();
-        if (produces == null) {
-            this.produces = swagger.getProduces();
-        }
-
-        setAbsolutePath(concatPath(swagger.getBasePath(), operationMeta.getOperationPath()));
-
-        this.createProduceProcessors();
-
-        Method method = operationMeta.getMethod();
-        Type[] genericParamTypes = method.getGenericParameterTypes();
-        if (genericParamTypes.length != operation.getParameters().size()) {
-            throw new Error("Param count is not equal between swagger and method,  path=" + absolutePath);
-        }
-
-        // 初始化所有rest param
-        for (int idx = 0; idx < genericParamTypes.length; idx++) {
-            Parameter parameter = operation.getParameters().get(idx);
-            Type genericParamType = genericParamTypes[idx];
-
-            RestParam param = new RestParam(idx, parameter, genericParamType);
-            addParam(param);
-        }
-
-        this.pathBuilder = new URLPathBuilder(absolutePath, paramMap);
+    Swagger swagger = operationMeta.getSchemaMeta().getSwagger();
+    Operation operation = operationMeta.getSwaggerOperation();
+    this.produces = operation.getProduces();
+    if (produces == null) {
+      this.produces = swagger.getProduces();
     }
 
-    public void setOperationMeta(OperationMeta operationMeta) {
-        this.operationMeta = operationMeta;
+    this.createProduceProcessors();
+
+    Method method = operationMeta.getMethod();
+    Type[] genericParamTypes = method.getGenericParameterTypes();
+    if (genericParamTypes.length != operation.getParameters().size()) {
+      throw new Error("Param count is not equal between swagger and method,  path=" + absolutePath);
     }
 
-    // 输出b/c/形式的url
-    private String concatPath(String basePath, String operationPath) {
-      return ("/" + nonNullify(basePath) + "/" + nonNullify(operationPath) + "/")
-            .replaceAll("/{2,}", "/");
+    // 初始化所有rest param
+    for (int idx = 0; idx < genericParamTypes.length; idx++) {
+      Parameter parameter = operation.getParameters().get(idx);
+      Type genericParamType = genericParamTypes[idx];
+
+      if ("formData".equals(parameter.getIn())) {
+        formData = true;
+      }
+
+      RestParam param = new RestParam(idx, parameter, genericParamType);
+      addParam(param);
     }
+
+    setAbsolutePath(concatPath(swagger.getBasePath(), operationMeta.getOperationPath()));
+  }
+
+  public boolean isFormData() {
+    return formData;
+  }
+
+  public void setOperationMeta(OperationMeta operationMeta) {
+    this.operationMeta = operationMeta;
+  }
+
+  // 输出b/c/形式的url
+  private String concatPath(String basePath, String operationPath) {
+    return ("/" + nonNullify(basePath) + "/" + nonNullify(operationPath) + "/")
+        .replaceAll("/{2,}", "/");
+  }
 
   private String nonNullify(String path) {
-        return path == null ? "" : path;
-    }
+    return path == null ? "" : path;
+  }
 
   public String getAbsolutePath() {
-        return this.absolutePath;
-    }
+    return this.absolutePath;
+  }
 
-    public void setAbsolutePath(String absolutePath) {
-        this.absolutePath = absolutePath;
-        this.absolutePathRegExp = createPathRegExp(absolutePath);
-    }
+  public void setAbsolutePath(String absolutePath) {
+    this.absolutePath = absolutePath;
+    this.absolutePathRegExp = createPathRegExp(absolutePath);
+    this.pathBuilder = new URLPathBuilder(absolutePath, paramMap);
+  }
 
-    public PathRegExp getAbsolutePathRegExp() {
-        return this.absolutePathRegExp;
-    }
+  public PathRegExp getAbsolutePathRegExp() {
+    return this.absolutePathRegExp;
+  }
 
-    public boolean isAbsoluteStaticPath() {
-        return this.absolutePathRegExp.isStaticPath();
-    }
+  public boolean isAbsoluteStaticPath() {
+    return this.absolutePathRegExp.isStaticPath();
+  }
 
-    protected PathRegExp createPathRegExp(String path) {
-        if (path == null || path.equals("")) {
-            throw new Error("null rest url is not supported");
+  protected PathRegExp createPathRegExp(String path) {
+    if (path == null || path.equals("")) {
+      throw new Error("null rest url is not supported");
+    }
+    try {
+      return new PathRegExp(path);
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage());
+      return null;
+    }
+  }
+
+  public RestParam getParamByName(String name) {
+    return paramMap.get(name);
+  }
+
+  public RestParam getParamByIndex(int index) {
+    return paramList.get(index);
+  }
+
+  public OperationMeta getOperationMeta() {
+    return operationMeta;
+  }
+
+  // 为operation创建支持的多种produce processor
+  protected void createProduceProcessors() {
+    if (null == produces || produces.isEmpty()) {
+      for (ProduceProcessor processor : ProduceProcessorManager.INSTANCE.values()) {
+        this.produceProcessorMap.put(processor.getName(), processor);
+      }
+    } else {
+      for (String produce : produces) {
+        ProduceProcessor processor = ProduceProcessorManager.INSTANCE.findValue(produce);
+        if (processor == null) {
+          LOGGER.error("produce {} is not supported", produce);
+          continue;
         }
-        try {
-            return new PathRegExp(path);
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage());
-            return null;
-        }
+        this.produceProcessorMap.put(produce, processor);
+      }
     }
 
-    public RestParam getParamByName(String name) {
-        return paramMap.get(name);
+    defaultProcessor = getDefaultOrFirstProcessor();
+    produceProcessorMap.putIfAbsent(MediaType.WILDCARD, defaultProcessor);
+    produceProcessorMap.putIfAbsent(ProduceProcessorManager.DEFAULT_TYPE, ProduceProcessorManager.DEFAULT_PROCESSOR);
+  }
+
+  public URLPathBuilder getPathBuilder() {
+    return this.pathBuilder;
+  }
+
+  public List<RestParam> getParamList() {
+    return paramList;
+  }
+
+  private void addParam(RestParam param) {
+    paramList.add(param);
+    paramMap.put(param.getParamName(), param);
+  }
+
+  public ProduceProcessor findProduceProcessor(String type) {
+    return this.produceProcessorMap.get(type);
+  }
+
+  // 选择与accept匹配的produce processor或者缺省的
+  public ProduceProcessor ensureFindProduceProcessor(HttpServletRequestEx requestEx) {
+    String acceptType = requestEx.getHeader(HttpHeaders.ACCEPT);
+    return ensureFindProduceProcessor(acceptType);
+  }
+
+  public ProduceProcessor ensureFindProduceProcessor(String acceptType) {
+    if (StringUtils.isEmpty(acceptType)) {
+      return defaultProcessor;
     }
 
-    public RestParam getParamByIndex(int index) {
-        return paramList.get(index);
-    }
-
-    public OperationMeta getOperationMeta() {
-        return operationMeta;
-    }
-
-    // 为operation创建支持的多种produce processor
-    protected void createProduceProcessors() {
-        if (null == produces || produces.isEmpty()) {
-            for (ProduceProcessor processor : ProduceProcessorManager.INSTANCE.values()) {
-                this.produceProcessorMap.put(processor.getName(), processor);
-            }
-            return;
-        }
-        for (String produce : produces) {
-            ProduceProcessor processor = ProduceProcessorManager.INSTANCE.findValue(produce);
-            if (processor == null) {
-                LOGGER.error("produce {} is not supported", produce);
-                continue;
-            }
-            this.produceProcessorMap.put(produce, processor);
-        }
-
-        defaultProcessor = getDefaultOrFirstProcessor();
-    }
-
-    public URLPathBuilder getPathBuilder() {
-        return this.pathBuilder;
-    }
-
-    public List<RestParam> getParamList() {
-        return paramList;
-    }
-
-    private void addParam(RestParam param) {
-        paramList.add(param);
-        paramMap.put(param.getParamName(), param);
-    }
-
-    public ProduceProcessor findProduceProcessor(String type) {
-        return this.produceProcessorMap.get(type);
-    }
-
-    // 选择与accept匹配的produce processor或者缺省的
-    public ProduceProcessor ensureFindProduceProcessor(String types) {
-        if (StringUtils.isEmpty(types)) {
-            return defaultProcessor;
-        }
-
-        String[] typeArr = splitAcceptTypes(types);
-        if (containSpecType(typeArr, MediaType.WILDCARD)) {
-            return defaultProcessor;
-        }
-        if (containSpecType(typeArr, ProduceProcessorManager.DEFAULT_TYPE)) {
-            return ProduceProcessorManager.DEFAULT_PROCESSOR;
-        }
-
-        for (String type : typeArr) {
-            ProduceProcessor processor = this.produceProcessorMap.get(type);
-            if (null != processor) {
-                return processor;
-            }
-        }
-        return null;
-    }
-
-    // 只提取出media type，忽略charset和q值等
-    protected String[] splitAcceptTypes(String types) {
-        String[] typeArr = types.split(ACCEPT_TYPE_SEPARATER);
-        for (int idxX = 0; idxX < typeArr.length; idxX++) {
-            String[] strItems = typeArr[idxX].split(ACCEPT_TYPE_INNER_SEPARATER);
-            for (int idxY = 0; idxY < strItems.length; idxY++) {
-                if (strItems[idxY].contains(MEDIATYPE_INNER_SLASH)) {
-                    typeArr[idxX] = strItems[idxY].trim();
-                    break;
-                }
-            }
-        }
-        return typeArr;
-    }
-
-    // 检查是否包含特定的类型
-    protected boolean containSpecType(String[] typeArr, String specType) {
-        for (String type : typeArr) {
-            if (specType.equals(type)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public ProduceProcessor getDefaultProcessor() {
-        return this.defaultProcessor;
-    }
-
-    // 仅用于测试
-    protected void setDefaultProcessor(ProduceProcessor defaultProcessor) {
-        this.defaultProcessor = defaultProcessor;
-    }
-
-    // 获取缺省的或者第一个processor
-    private ProduceProcessor getDefaultOrFirstProcessor() {
-        ProduceProcessor processor = this.produceProcessorMap.get(ProduceProcessorManager.DEFAULT_TYPE);
-        if (null == processor) {
-            for (ProduceProcessor pp : this.produceProcessorMap.values()) {
-                return pp;
-            }
-        }
+    List<String> mimeTyps = Utils.getSortedAcceptableMimeTypes(acceptType);
+    for (String mime : mimeTyps) {
+      ProduceProcessor processor = this.produceProcessorMap.get(mime);
+      if (null != processor) {
         return processor;
+      }
     }
 
-    public String getHttpMethod() {
-        return operationMeta.getHttpMethod();
+    return null;
+  }
+
+  // 获取缺省的或者第一个processor
+  private ProduceProcessor getDefaultOrFirstProcessor() {
+    ProduceProcessor processor = this.produceProcessorMap.get(ProduceProcessorManager.DEFAULT_TYPE);
+    if (null == processor) {
+      for (ProduceProcessor pp : this.produceProcessorMap.values()) {
+        return pp;
+      }
     }
+
+    if (processor == null) {
+      processor = ProduceProcessorManager.JSON_PROCESSOR;
+    }
+    return processor;
+  }
+
+  public String getHttpMethod() {
+    return operationMeta.getHttpMethod();
+  }
+
+  public List<String> getProduces() {
+    return produces;
+  }
 }

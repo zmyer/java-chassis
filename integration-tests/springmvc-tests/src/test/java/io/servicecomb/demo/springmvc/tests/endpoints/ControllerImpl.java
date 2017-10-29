@@ -16,11 +16,10 @@
 
 package io.servicecomb.demo.springmvc.tests.endpoints;
 
-import io.servicecomb.demo.controller.Person;
-import io.servicecomb.provider.rest.common.RestSchema;
-import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.MediaType;
+
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -28,36 +27,40 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import io.servicecomb.demo.controller.Person;
+import io.servicecomb.provider.rest.common.RestSchema;
+
+@Profile("!SimplifiedMapping")
 @RestSchema(schemaId = "controller")
 @RequestMapping(path = "/controller", produces = MediaType.APPLICATION_JSON)
-public class ControllerImpl {
-
+public class ControllerImpl extends ControllerBase {
   @RequestMapping(path = "/add", method = RequestMethod.GET)
+  @Override
   public int add(@RequestParam("a") int a, @RequestParam("b") int b) {
-    return a + b;
+    return super.add(a, b);
   }
 
   @RequestMapping(path = "/sayhello/{name}", method = RequestMethod.POST)
+  @Override
   public String sayHello(@PathVariable("name") String name) {
-    return "hello " + name;
+    return super.sayHello(name);
   }
 
   @RequestMapping(path = "/saysomething", method = RequestMethod.POST)
+  @Override
   public String saySomething(String prefix, @RequestBody Person user) {
-    return prefix + " " + user.getName();
+    return super.saySomething(prefix, user);
   }
 
   @RequestMapping(path = "/sayhi", method = RequestMethod.GET)
+  @Override
   public String sayHi(HttpServletRequest request) {
-    String[] values = request.getParameterValues("name");
-    if (values != null && values.length > 0 && values[0].equals("throwexception")) {
-      throw new RuntimeException();
-    }
-    return "hi " + request.getParameter("name") + " " + Arrays.toString(values);
+    return super.sayHi(request);
   }
 
   @RequestMapping(path = "/sayhei", method = RequestMethod.GET)
+  @Override
   public String sayHei(@RequestHeader("name") String name) {
-    return "hei " + name;
+    return super.sayHei(name);
   }
 }

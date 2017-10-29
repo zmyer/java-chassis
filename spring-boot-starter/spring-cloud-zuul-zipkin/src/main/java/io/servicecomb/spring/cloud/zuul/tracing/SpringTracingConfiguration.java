@@ -16,27 +16,33 @@
 
 package io.servicecomb.spring.cloud.zuul.tracing;
 
+import static io.servicecomb.foundation.common.base.ServiceCombConstants.CONFIG_TRACING_ENABLED_KEY;
 import static javax.servlet.DispatcherType.ASYNC;
 import static javax.servlet.DispatcherType.ERROR;
 import static javax.servlet.DispatcherType.FORWARD;
 import static javax.servlet.DispatcherType.INCLUDE;
 import static javax.servlet.DispatcherType.REQUEST;
 
-import brave.http.HttpClientAdapter;
-import brave.http.HttpClientHandler;
-import brave.http.HttpTracing;
-import brave.servlet.TracingFilter;
-import com.netflix.zuul.context.RequestContext;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 
+import com.netflix.zuul.context.RequestContext;
+
+import brave.http.HttpClientAdapter;
+import brave.http.HttpClientHandler;
+import brave.http.HttpTracing;
+import brave.servlet.TracingFilter;
+
 @Configuration
-class SpringTracingConfiguration {
+@ConditionalOnProperty(value = CONFIG_TRACING_ENABLED_KEY, havingValue = "true", matchIfMissing = true)
+public class SpringTracingConfiguration {
 
   @Bean
   FilterRegistrationBean traceWebFilter(HttpTracing httpTracing) {
@@ -91,7 +97,7 @@ class SpringTracingConfiguration {
     @Nullable
     @Override
     public Integer statusCode(@Nonnull HttpServletResponse response) {
-      return response.getStatus() == 0? 500 : response.getStatus();
+      return response.getStatus() == 0 ? 500 : response.getStatus();
     }
   }
 }

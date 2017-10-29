@@ -17,50 +17,60 @@
 package io.servicecomb.serviceregistry.client.http;
 
 import io.servicecomb.foundation.common.net.IpPort;
-
 import io.vertx.core.http.HttpMethod;
 
 /**
  * Created by   on 2017/1/9.
  */
 public class RequestContext {
-    private IpPort ipPort;
+  private IpPort ipPort;
 
-    private String uri;
+  private String uri;
 
-    private HttpMethod method;
+  private HttpMethod method;
 
-    private RequestParam params;
+  private RequestParam params;
 
-    public IpPort getIpPort() {
-        return ipPort;
-    }
+  // we can set max retry policies, now only try it twice
+  private boolean retry;
 
-    public void setIpPort(IpPort ipPort) {
-        this.ipPort = ipPort;
-    }
+  public IpPort getIpPort() {
+    return ipPort;
+  }
 
-    public String getUri() {
-        return uri;
-    }
+  public void setIpPort(IpPort ipPort) {
+    this.ipPort = ipPort;
+  }
 
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
+  public String getUri() {
+    return uri;
+  }
 
-    public HttpMethod getMethod() {
-        return method;
-    }
+  public void setUri(String uri) {
+    this.uri = uri;
+  }
 
-    public void setMethod(HttpMethod method) {
-        this.method = method;
-    }
+  public HttpMethod getMethod() {
+    return method;
+  }
 
-    public RequestParam getParams() {
-        return params;
-    }
+  public void setMethod(HttpMethod method) {
+    this.method = method;
+  }
 
-    public void setParams(RequestParam params) {
-        this.params = params;
-    }
+  public RequestParam getParams() {
+    return params;
+  }
+
+  public void setParams(RequestParam params) {
+    this.params = params;
+  }
+
+  public boolean isRetry() {
+    return retry;
+  }
+
+  public void setRetry(boolean retry) {
+    this.retry = retry;
+  }
 }

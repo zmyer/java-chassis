@@ -16,56 +16,31 @@
 
 package io.servicecomb.swagger.generator.springmvc;
 
-import java.util.List;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+
+import io.servicecomb.swagger.extend.annotations.RawJsonRequestBody;
 
 @RequestMapping(
-        path = "Echo",
-        method = {RequestMethod.PUT},
-        consumes = {"a", "b"},
-        produces = {"a", "b"})
+    path = "Echo",
+    method = {RequestMethod.PUT},
+    consumes = {"a", "b"},
+    produces = {"a", "b"})
 public class Echo {
-    @RequestMapping
-    public ResponseEntity<List<User>> testResponseEntity() {
-        return null;
-    }
 
-    @RequestMapping
-    public void emptyPath() {
+  @RequestMapping
+  public void emptyPath() {
+  }
 
-    }
+  @RequestMapping(method = {RequestMethod.GET, RequestMethod.POST})
+  public void multiHttpMethod() {
+  }
 
-    @RequestMapping(
-            path = "echo/{targetName}",
-            method = {RequestMethod.POST},
-            consumes = {"text/plain", "application/*"},
-            produces = {"text/plain", "application/*"})
-    public String echo(@RequestBody User srcUser, @RequestHeader String header, @PathVariable String targetName,
-            @RequestParam(name = "word") String word, @RequestAttribute String form) {
-        return String.format("%s %s %s %s %s", srcUser.name, header, targetName, word, form);
-    }
+  @RequestMapping
+  public void inheritHttpMethod(int query) {
+  }
 
-    @RequestMapping(method = {RequestMethod.GET, RequestMethod.POST})
-    public void multiHttpMethod() {
-    }
-
-    @RequestMapping(path = "query")
-    public void defaultParam(int query) {
-    }
-
-    @RequestMapping(path = {"a", "b"})
-    public void multiPath(int query) {
-    }
-
-    @RequestMapping
-    public void inheritHttpMethod(int query) {
-    }
+  @RequestMapping
+  public void rawJsonStringMethod(@RawJsonRequestBody String jsonInput) {
+  }
 }

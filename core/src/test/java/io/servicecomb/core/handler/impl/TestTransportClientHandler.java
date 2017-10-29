@@ -20,19 +20,24 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import io.servicecomb.core.Endpoint;
 import io.servicecomb.core.Invocation;
 import io.servicecomb.core.Transport;
 import io.servicecomb.swagger.invocation.AsyncResponse;
-import org.junit.Before;
-import org.junit.Test;
 
 public class TestTransportClientHandler {
 
   private final Endpoint endpoint = mock(Endpoint.class);
+
   private final TransportClientHandler transportClientHandler = TransportClientHandler.INSTANCE;
+
   private final Invocation invocation = mock(Invocation.class);
+
   private final AsyncResponse asyncResp = mock(AsyncResponse.class);
+
   private final Transport transport = mock(Transport.class);
 
   @Before
@@ -44,6 +49,7 @@ public class TestTransportClientHandler {
   @Test
   public void test() throws Exception {
     when(invocation.getTransport()).thenReturn(transport);
+    when(invocation.getEndpoint()).thenReturn(endpoint);
     transportClientHandler.handle(invocation, asyncResp);
 
     verify(transport).send(invocation, asyncResp);

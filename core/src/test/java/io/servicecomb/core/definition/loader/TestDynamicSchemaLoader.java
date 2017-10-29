@@ -15,8 +15,10 @@
  */
 package io.servicecomb.core.definition.loader;
 
+import java.util.ArrayList;
 import java.util.Collections;
 
+import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -28,47 +30,90 @@ import io.servicecomb.core.definition.SchemaMeta;
 import io.servicecomb.core.unittest.UnitTestMeta;
 import io.servicecomb.serviceregistry.RegistryUtils;
 import io.servicecomb.serviceregistry.ServiceRegistry;
+import io.servicecomb.serviceregistry.api.Const;
+import io.servicecomb.serviceregistry.api.registry.Microservice;
 import io.servicecomb.serviceregistry.registry.ServiceRegistryFactory;
 
 public class TestDynamicSchemaLoader {
-    private static MicroserviceMetaManager microserviceMetaManager = new MicroserviceMetaManager();
+  private static MicroserviceMetaManager microserviceMetaManager = new MicroserviceMetaManager();
 
-    @BeforeClass
-    public static void init() {
-        UnitTestMeta.init();
+  private static SchemaLoader loader = new SchemaLoader();
 
-        SchemaLoader loader = new SchemaLoader();
-        loader.setMicroserviceMetaManager(microserviceMetaManager);
+  private static Microservice microservice;
 
-        SchemaListenerManager schemaListenerManager = new SchemaListenerManager();
-        schemaListenerManager.setSchemaListenerList(Collections.emptyList());
+  @BeforeClass
+  public static void init() {
+    UnitTestMeta.init();
 
-        CseContext context = CseContext.getInstance();
-        context.setSchemaLoader(loader);
-        context.setSchemaListenerManager(schemaListenerManager);
+    loader.setMicroserviceMetaManager(microserviceMetaManager);
 
-        ServiceRegistry serviceRegistry = ServiceRegistryFactory.createLocal();
-        serviceRegistry.init();
+    SchemaListenerManager schemaListenerManager = new SchemaListenerManager();
+    schemaListenerManager.setSchemaListenerList(Collections.emptyList());
 
-        RegistryUtils.setServiceRegistry(serviceRegistry);
-    }
+    CseContext context = CseContext.getInstance();
+    context.setSchemaLoader(loader);
+    context.setSchemaListenerManager(schemaListenerManager);
 
-    @AfterClass
-    public static void teardown() {
-        RegistryUtils.setServiceRegistry(null);
-    }
+    ServiceRegistry serviceRegistry = ServiceRegistryFactory.createLocal();
+    serviceRegistry.init();
 
-    @Test
-    public void testRegisterSchemas() {
-        DynamicSchemaLoader.INSTANCE.registerSchemas("classpath*:test/test/schema.yaml");
-        SchemaMeta schemaMeta = microserviceMetaManager.ensureFindSchemaMeta("perfClient", "schema");
-        Assert.assertEquals("cse.gen.pojotest.perfClient.schema", schemaMeta.getPackageName());
-    }
-    
-    @Test
-    public void testRegisterShemasAcrossApp() {
-        DynamicSchemaLoader.INSTANCE.registerSchemas("CSE:as", "classpath*:test/test/schema.yaml");
-        SchemaMeta schemaMeta = microserviceMetaManager.ensureFindSchemaMeta("CSE:as", "schema");
-        Assert.assertEquals("cse.gen.CSE.as.schema", schemaMeta.getPackageName());
-    }
+    microservice = serviceRegistry.getMicroservice();
+    RegistryUtils.setServiceRegistry(serviceRegistry);
+  }
+
+  @AfterClass
+  public static void teardown() {
+    RegistryUtils.setServiceRegistry(null);
+  }
+
+  @Test
+  public void testRegisterSchemas() {
+    DynamicSchemaLoader.INSTANCE.registerSchemas("classpath*:test/test/schema.yaml");
+    SchemaMeta schemaMeta = microserviceMetaManager.ensureFindSchemaMeta("perfClient", "schema");
+    Assert.assertEquals("cse.gen.pojotest.perfClient.schema", schemaMeta.getPackageName());
+  }
+
+  @Test
+  public void testRegisterShemasAcrossApp() {
+    DynamicSchemaLoader.INSTANCE.registerSchemas("CSE:as", "classpath*:test/test/schema.yaml");
+    SchemaMeta schemaMeta = microserviceMetaManager.ensureFindSchemaMeta("CSE:as", "schema");
+    Assert.assertEquals("cse.gen.CSE.as.schema", schemaMeta.getPackageName());
+  }
+
+  @Test
+  public void testPutSelfBasePathIfAbsent_noUrlPrefix() {
+    System.clearProperty(Const.URL_PREFIX);
+    microservice.setPaths(new ArrayList<>());
+
+    loader.putSelfBasePathIfAbsent("perfClient", "/test");
+
+    Assert.assertThat(microservice.getPaths().size(), Matchers.is(1));
+    Assert.assertThat(microservice.getPaths().get(0).getPath(), Matchers.is("/test"));
+  }
+
+  @Test
+  public void testPutSelfBasePathIfAbsent_WithUrlPrefix() {
+    System.setProperty(Const.URL_PREFIX, "/root/rest");
+    microservice.setPaths(new ArrayList<>());
+
+    loader.putSelfBasePathIfAbsent("perfClient", "/test");
+
+    Assert.assertThat(microservice.getPaths().size(), Matchers.is(1));
+    Assert.assertThat(microservice.getPaths().get(0).getPath(), Matchers.is("/root/rest/test"));
+
+    System.clearProperty(Const.URL_PREFIX);
+  }
+
+  @Test
+  public void testPutSelfBasePathIfAbsent_WithUrlPrefix_StartWithUrlPrefix() {
+    System.setProperty(Const.URL_PREFIX, "/root/rest");
+    microservice.setPaths(new ArrayList<>());
+
+    loader.putSelfBasePathIfAbsent("perfClient", "/root/rest/test");
+
+    Assert.assertThat(microservice.getPaths().size(), Matchers.is(1));
+    Assert.assertThat(microservice.getPaths().get(0).getPath(), Matchers.is("/root/rest/test"));
+
+    System.clearProperty(Const.URL_PREFIX);
+  }
 }

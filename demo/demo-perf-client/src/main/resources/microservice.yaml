@@ -1,11 +1,12 @@
-﻿APPLICATION_ID: pojotest
+﻿cse-config-order: 100
+APPLICATION_ID: pojotest
 service_description:
   name: perfClient
   version: 0.0.1
 cse:
   service:
     registry:
-      address: http://127.0.0.1:9980
+      address: http://127.0.0.1:30100
   rest:
     client:
       thread-count: 10

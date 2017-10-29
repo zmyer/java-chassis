@@ -16,6 +16,8 @@
 
 package io.servicecomb.serviceregistry.api.registry;
 
+import static io.servicecomb.serviceregistry.definition.DefinitionConst.CONFIG_ALLOW_CROSS_APP_KEY;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,38 +25,37 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.servicecomb.config.archaius.sources.MicroserviceConfigLoader;
-import io.servicecomb.serviceregistry.definition.DefinitionConst;
 import io.servicecomb.serviceregistry.definition.MicroserviceDefinition;
 import mockit.Deencapsulation;
 
 public class TestMicroserviceFactory {
-    @Test
-    public void testAllowCrossApp() {
-        MicroserviceFactory factory = new MicroserviceFactory();
-        Map<String, String> propertiesMap = new HashMap<>();
-        Assert.assertFalse(Deencapsulation.invoke(factory, "allowCrossApp", propertiesMap));
+  @Test
+  public void testAllowCrossApp() {
+    MicroserviceFactory factory = new MicroserviceFactory();
+    Map<String, String> propertiesMap = new HashMap<>();
+    Assert.assertFalse(Deencapsulation.invoke(factory, "allowCrossApp", propertiesMap));
 
-        propertiesMap.put(DefinitionConst.allowCrossAppKey, "true");
-        Assert.assertTrue(Deencapsulation.invoke(factory, "allowCrossApp", propertiesMap));
+    propertiesMap.put(CONFIG_ALLOW_CROSS_APP_KEY, "true");
+    Assert.assertTrue(Deencapsulation.invoke(factory, "allowCrossApp", propertiesMap));
 
-        propertiesMap.put(DefinitionConst.allowCrossAppKey, "false");
-        Assert.assertFalse(Deencapsulation.invoke(factory, "allowCrossApp", propertiesMap));
+    propertiesMap.put(CONFIG_ALLOW_CROSS_APP_KEY, "false");
+    Assert.assertFalse(Deencapsulation.invoke(factory, "allowCrossApp", propertiesMap));
 
-        propertiesMap.put(DefinitionConst.allowCrossAppKey, "asfas");
-        Assert.assertFalse(Deencapsulation.invoke(factory, "allowCrossApp", propertiesMap));
-    }
+    propertiesMap.put(CONFIG_ALLOW_CROSS_APP_KEY, "asfas");
+    Assert.assertFalse(Deencapsulation.invoke(factory, "allowCrossApp", propertiesMap));
+  }
 
-    @Test
-    public void testInit() {
-        MicroserviceConfigLoader loader = new MicroserviceConfigLoader();
-        loader.loadAndSort();
+  @Test
+  public void testInit() {
+    MicroserviceConfigLoader loader = new MicroserviceConfigLoader();
+    loader.loadAndSort();
 
-        MicroserviceDefinition microserviceDefinition = new MicroserviceDefinition(loader.getConfigModels());
-        MicroserviceFactory factory = new MicroserviceFactory();
-        Microservice microservice = factory.create(microserviceDefinition);
+    MicroserviceDefinition microserviceDefinition = new MicroserviceDefinition(loader.getConfigModels());
+    MicroserviceFactory factory = new MicroserviceFactory();
+    Microservice microservice = factory.create(microserviceDefinition);
 
-        String microserviceName = "default";
+    String microserviceName = "default";
 
-        Assert.assertEquals(microserviceName, microservice.getServiceName());
-    }
+    Assert.assertEquals(microserviceName, microservice.getServiceName());
+  }
 }

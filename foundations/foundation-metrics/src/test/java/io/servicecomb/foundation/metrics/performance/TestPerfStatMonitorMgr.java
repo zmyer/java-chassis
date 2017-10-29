@@ -16,45 +16,52 @@
 
 package io.servicecomb.foundation.metrics.performance;
 
+import java.util.stream.Collectors;
+
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- *
- * @since Mar 14, 2017
- * @see 
- */
 public class TestPerfStatMonitorMgr {
 
-    PerfStatMonitorMgr oPerfStatMonitorMgr = null;
+  PerfStatMonitorMgr oPerfStatMonitorMgr = null;
 
-    PerfStatSuccFail oPerfStatSuccFail = null;
+  PerfStatSuccFail oPerfStatSuccFail = null;
 
-    @Before
-    public void setUp() throws Exception {
-        oPerfStatMonitorMgr = new PerfStatMonitorMgr();
-        oPerfStatSuccFail = new PerfStatSuccFail("testMergeFrom");
-    }
+  @Before
+  public void setUp() throws Exception {
+    oPerfStatMonitorMgr = new PerfStatMonitorMgr();
+    oPerfStatSuccFail = new PerfStatSuccFail("testMergeFrom");
+  }
 
-    @After
-    public void tearDown() throws Exception {
-        oPerfStatMonitorMgr = null;
-        oPerfStatSuccFail = null;
-    }
+  @After
+  public void tearDown() throws Exception {
+    oPerfStatMonitorMgr = null;
+    oPerfStatSuccFail = null;
+  }
 
-    @Test
-    public void testRegisterPerfStat() {
-        oPerfStatMonitorMgr.registerPerfStat(oPerfStatSuccFail, 0);
-        Assert.assertEquals(1, oPerfStatMonitorMgr.getMonitorList().size());
-    }
+  @Test
+  public void testRegisterPerfStat() {
+    oPerfStatMonitorMgr.registerPerfStat(oPerfStatSuccFail, 0);
+    Assert.assertEquals(1, oPerfStatMonitorMgr.getMonitorList().size());
+  }
 
-    @Test
-    public void testOnCycle() {
-        oPerfStatMonitorMgr.registerPerfStat(oPerfStatSuccFail, 0);
-        oPerfStatMonitorMgr.onCycle(System.currentTimeMillis(), 10);
-        Assert.assertEquals(1,oPerfStatMonitorMgr.getMonitorPerfStat().size());
+  @Test
+  public void testOnCycle() {
+    oPerfStatMonitorMgr.registerPerfStat(oPerfStatSuccFail, 0);
+    oPerfStatMonitorMgr.onCycle(System.currentTimeMillis(), 10);
+    Assert.assertEquals(1, oPerfStatMonitorMgr.getMonitorPerfStat().size());
+  }
 
-    }
+  @Test
+  public void testSort() {
+    oPerfStatMonitorMgr.registerPerfStat(new PerfStatSuccFail("a"), -1);
+    oPerfStatMonitorMgr.registerPerfStat(new PerfStatSuccFail("b"), Integer.MAX_VALUE);
+
+    Assert.assertThat(
+        oPerfStatMonitorMgr.getMonitorList().stream().map(ps -> ps.getName()).collect(Collectors.toList()),
+        Matchers.contains("a", "b"));
+  }
 }

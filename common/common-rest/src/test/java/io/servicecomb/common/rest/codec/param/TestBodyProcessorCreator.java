@@ -16,39 +16,48 @@
 
 package io.servicecomb.common.rest.codec.param;
 
-import java.util.List;
-
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
+import io.servicecomb.common.rest.codec.param.BodyProcessorCreator.BodyProcessor;
 import io.servicecomb.common.rest.codec.param.BodyProcessorCreator.RawJsonBodyProcessor;
 import io.servicecomb.swagger.generator.core.SwaggerConst;
 import io.swagger.models.parameters.BodyParameter;
 
 public class TestBodyProcessorCreator {
-    private static BodyProcessorCreator bodyCreator;
+  @Test
+  public void testCreateNormal() {
+    ParamValueProcessorCreator creator =
+        ParamValueProcessorCreatorManager.INSTANCE.findValue(BodyProcessorCreator.PARAMTYPE);
+    BodyParameter param = new BodyParameter();
 
-    @Before
-    public void beforeTest() {
-        bodyCreator = (BodyProcessorCreator) ParamValueProcessorCreatorManager.INSTANCE.getBodyProcessorCreater();
-    }
+    ParamValueProcessor processor = creator.create(param, String.class);
 
-    @Test
-    public void testBodyProcessorCreator() throws Exception {
-        BodyParameter bp = new BodyParameter();
-        bp.setVendorExtension(SwaggerConst.EXT_RAW_JSON_TYPE, true);
+    Assert.assertEquals(BodyProcessor.class, processor.getClass());
+  }
 
-        ParamValueProcessor processor = bodyCreator.create(bp, String.class);
-        Assert.assertTrue(RawJsonBodyProcessor.class.isInstance(processor));
+  @Test
+  public void testCreateRawJson() {
+    ParamValueProcessorCreator creator =
+        ParamValueProcessorCreatorManager.INSTANCE.findValue(BodyProcessorCreator.PARAMTYPE);
+    BodyParameter param = new BodyParameter();
+    param.setVendorExtension(SwaggerConst.EXT_RAW_JSON_TYPE, true);
 
-        bp.setVendorExtension(SwaggerConst.EXT_RAW_JSON_TYPE, false);
-        processor = bodyCreator.create(bp, String.class);
-        Assert.assertFalse(RawJsonBodyProcessor.class.isInstance(processor));
+    ParamValueProcessor processor = creator.create(param, String.class);
 
-        bp.setVendorExtension(SwaggerConst.EXT_RAW_JSON_TYPE, true);
-        processor = bodyCreator.create(bp, List.class);
-        Assert.assertFalse(RawJsonBodyProcessor.class.isInstance(processor));
-    }
+    Assert.assertEquals(RawJsonBodyProcessor.class, processor.getClass());
+  }
 
+  // now, we ignore rawJson flag
+  @Test
+  public void testCreateInvalidRawJson() {
+    ParamValueProcessorCreator creator =
+        ParamValueProcessorCreatorManager.INSTANCE.findValue(BodyProcessorCreator.PARAMTYPE);
+    BodyParameter param = new BodyParameter();
+    param.setVendorExtension(SwaggerConst.EXT_RAW_JSON_TYPE, true);
+
+    ParamValueProcessor processor = creator.create(param, Integer.class);
+
+    Assert.assertEquals(BodyProcessor.class, processor.getClass());
+  }
 }

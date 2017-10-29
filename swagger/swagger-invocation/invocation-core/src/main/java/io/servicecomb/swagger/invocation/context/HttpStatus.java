@@ -15,40 +15,8 @@
  */
 package io.servicecomb.swagger.invocation.context;
 
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.Response.Status.Family;
-import javax.ws.rs.core.Response.StatusType;
-
-public class HttpStatus implements StatusType {
-    public static boolean isSuccess(int code) {
-        return Status.Family.SUCCESSFUL.equals(Status.Family.familyOf(code));
-    }
-
-    public static boolean isSuccess(StatusType status) {
-        return Status.Family.SUCCESSFUL.equals(status.getFamily());
-    }
-
-    private final int statusCode;
-
-    private final String reason;
-
-    public HttpStatus(final int statusCode, final String reasonPhrase) {
-        this.statusCode = statusCode;
-        this.reason = reasonPhrase;
-    }
-
-    @Override
-    public int getStatusCode() {
-        return statusCode;
-    }
-
-    @Override
-    public Family getFamily() {
-        return Family.familyOf(statusCode);
-    }
-
-    @Override
-    public String getReasonPhrase() {
-        return reason;
-    }
+public class HttpStatus extends io.servicecomb.foundation.common.http.HttpStatus {
+  public HttpStatus(int statusCode, String reasonPhrase) {
+    super(statusCode, reasonPhrase);
+  }
 }

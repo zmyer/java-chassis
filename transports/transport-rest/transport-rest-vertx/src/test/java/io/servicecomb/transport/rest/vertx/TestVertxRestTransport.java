@@ -16,6 +16,9 @@
 
 package io.servicecomb.transport.rest.vertx;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -29,65 +32,117 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import mockit.Expectations;
 import mockit.Mock;
 import mockit.MockUp;
 
 public class TestVertxRestTransport {
 
-    private VertxRestTransport instance = new VertxRestTransport();
+  private VertxRestTransport instance = new VertxRestTransport();
 
-    @Test
-    public void testGetInstance() {
-        Assert.assertNotNull(instance);
-    }
+  @Test
+  public void testGetInstance() {
+    Assert.assertNotNull(instance);
+  }
 
-    @Test
-    public void testGetName() {
-        Assert.assertEquals("rest", instance.getName());
+  @Test
+  public void testGetName() {
+    Assert.assertEquals("rest", instance.getName());
+  }
 
-    }
-
-    @Test
-    public void testInit() {
-        boolean status = false;
-        try {
-            new MockUp<VertxUtils>() {
-                @Mock
-                public Vertx init(VertxOptions vertxOptions) {
-                    return null;
-
-                }
-
-                @Mock
-                public <VERTICLE extends AbstractVerticle> boolean blockDeploy(Vertx vertx, Class<VERTICLE> cls,
-                        DeploymentOptions options) throws InterruptedException {
-                    return true;
-                }
-            };
-            instance.init();
-        } catch (Exception e) {
-            status = true;
+  @Test
+  public void testInit() {
+    boolean status = false;
+    try {
+      new MockUp<VertxUtils>() {
+        @Mock
+        public Vertx init(VertxOptions vertxOptions) {
+          return null;
         }
-        Assert.assertFalse(status);
-    }
 
-    @Test
-    public void testSendException() {
-        boolean validAssert;
-        Invocation invocation = Mockito.mock(Invocation.class);
-        AsyncResponse asyncResp = Mockito.mock(AsyncResponse.class);
-        URIEndpointObject endpoint = Mockito.mock(URIEndpointObject.class);
-        Endpoint end = Mockito.mock(Endpoint.class);
-        Mockito.when(invocation.getEndpoint()).thenReturn(end);
-        Mockito.when(invocation.getEndpoint().getAddress()).thenReturn(endpoint);
-        try {
-            validAssert = true;
-            instance.send(invocation, asyncResp);
-        } catch (Exception e) {
-
-            validAssert = false;
+        @Mock
+        public <VERTICLE extends AbstractVerticle> boolean blockDeploy(Vertx vertx, Class<VERTICLE> cls,
+            DeploymentOptions options) throws InterruptedException {
+          return true;
         }
-        Assert.assertFalse(validAssert);
+      };
+      instance.init();
+    } catch (Exception e) {
+      status = true;
     }
+    Assert.assertFalse(status);
+  }
 
+  @Test
+  public void testSendException() {
+    boolean validAssert;
+    Invocation invocation = Mockito.mock(Invocation.class);
+    AsyncResponse asyncResp = Mockito.mock(AsyncResponse.class);
+    URIEndpointObject endpoint = Mockito.mock(URIEndpointObject.class);
+    Endpoint end = Mockito.mock(Endpoint.class);
+    Mockito.when(invocation.getEndpoint()).thenReturn(end);
+    Mockito.when(invocation.getEndpoint().getAddress()).thenReturn(endpoint);
+    try {
+      validAssert = true;
+      instance.send(invocation, asyncResp);
+    } catch (Exception e) {
+
+      validAssert = false;
+    }
+    Assert.assertFalse(validAssert);
+  }
+
+  @Test
+  public void testGetOrder() {
+    VertxRestTransport transport = new VertxRestTransport();
+    Assert.assertEquals(-1000, transport.getOrder());
+  }
+
+  @Test
+  public void testCanInitNullAddress() throws IOException {
+    new Expectations(TransportConfig.class) {
+      {
+        TransportConfig.getAddress();
+        result = null;
+      }
+    };
+
+    VertxRestTransport transport = new VertxRestTransport();
+    Assert.assertTrue(transport.canInit());
+  }
+
+  @Test
+  public void testCanInitListened() throws IOException {
+    ServerSocket ss = new ServerSocket(0);
+    int port = ss.getLocalPort();
+
+    new Expectations(TransportConfig.class) {
+      {
+        TransportConfig.getAddress();
+        result = "0.0.0.0:" + port;
+      }
+    };
+
+    VertxRestTransport transport = new VertxRestTransport();
+    Assert.assertFalse(transport.canInit());
+
+    ss.close();
+  }
+
+  @Test
+  public void testCanInitNotListened() throws IOException {
+    ServerSocket ss = new ServerSocket(0);
+    int port = ss.getLocalPort();
+    ss.close();
+
+    new Expectations(TransportConfig.class) {
+      {
+        TransportConfig.getAddress();
+        result = "0.0.0.0:" + port;
+      }
+    };
+
+    VertxRestTransport transport = new VertxRestTransport();
+    Assert.assertTrue(transport.canInit());
+  }
 }

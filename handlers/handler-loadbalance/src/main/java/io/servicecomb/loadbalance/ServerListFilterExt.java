@@ -13,7 +13,7 @@
     * See the License for the specific language governing permissions and
     * limitations under the License.
     */
-  
+
 package io.servicecomb.loadbalance;
 
 import com.netflix.loadbalancer.Server;
@@ -26,15 +26,19 @@ import io.servicecomb.core.Invocation;
  *
  */
 public interface ServerListFilterExt extends ServerListFilter<Server> {
-    default void setName(String name) {
+  default void setName(String name) {
 
-    }
+  }
 
-    default void setLoadBalancer(LoadBalancer lb) {
+  default void setLoadBalancer(LoadBalancer lb) {
 
-    }
+  }
 
-    default void setInvocation(Invocation invocation) {
+  /**
+   * Server list filter should be stateless. Since invocation has state information, you can't use it for next invocation.
+   * Please implement stateful filters very carefully.
+   */
+  default void setInvocation(Invocation invocation) {
 
-    }
+  }
 }

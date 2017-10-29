@@ -5,7 +5,7 @@ service_description:
 cse:
   service:
     registry:
-      address: http://127.0.0.1:9980
+      address: http://127.0.0.1:30100
   handler:
     chain:
       Consumer:
@@ -13,3 +13,6 @@ cse:
   isolation:
     Consumer:
       enabled: false
+  loadbalance:
+    strategy:
+      name: Random

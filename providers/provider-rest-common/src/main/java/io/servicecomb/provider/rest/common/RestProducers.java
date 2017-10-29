@@ -18,32 +18,43 @@ package io.servicecomb.provider.rest.common;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;
 
-import io.servicecomb.core.provider.CseBeanPostProcessor.ProviderProcessor;
 import io.servicecomb.core.provider.producer.ProducerMeta;
 import io.servicecomb.foundation.common.utils.BeanUtils;
 
 @Component
-public class RestProducers implements ProviderProcessor {
-    private List<ProducerMeta> producerMetaList = new ArrayList<>();
+public class RestProducers implements BeanPostProcessor {
+  private List<ProducerMeta> producerMetaList = new ArrayList<>();
 
-    public List<ProducerMeta> getProducerMetaList() {
-        return producerMetaList;
+  public List<ProducerMeta> getProducerMetaList() {
+    return producerMetaList;
+  }
+
+  @Override
+  public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+    return bean;
+  }
+
+  @Override
+  public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+    processProvider(beanName, bean);
+
+    return bean;
+  }
+
+  protected void processProvider(String beanName, Object bean) {
+    // aop后，新的实例的父类可能是原class，也可能只是个proxy，父类不是原class
+    // 所以，需要先取出原class，再取标注
+    Class<?> beanCls = BeanUtils.getImplClassFromBean(bean);
+    RestSchema restSchema = beanCls.getAnnotation(RestSchema.class);
+    if (restSchema == null) {
+      return;
     }
 
-    @Override
-    public void processProvider(ApplicationContext applicationContext, String beanName, Object bean) {
-        // aop后，新的实例的父类可能是原class，也可能只是个proxy，父类不是原class
-        // 所以，需要先取出原class，再取标注
-        Class<?> beanCls = BeanUtils.getImplClassFromBean(bean);
-        RestSchema restSchema = beanCls.getAnnotation(RestSchema.class);
-        if (restSchema == null) {
-            return;
-        }
-
-        ProducerMeta producerMeta = new ProducerMeta(restSchema.schemaId(), bean, beanCls);
-        producerMetaList.add(producerMeta);
-    }
+    ProducerMeta producerMeta = new ProducerMeta(restSchema.schemaId(), bean, beanCls);
+    producerMetaList.add(producerMeta);
+  }
 }

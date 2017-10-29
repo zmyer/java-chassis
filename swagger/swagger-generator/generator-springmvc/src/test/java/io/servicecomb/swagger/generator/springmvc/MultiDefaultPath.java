@@ -15,18 +15,19 @@
  */
 package io.servicecomb.swagger.generator.springmvc;
 
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 @RequestMapping(path = "abc")
 public class MultiDefaultPath {
-    @RequestMapping(method = RequestMethod.GET)
-    public void p1() {
+  @GetMapping
+  public void p1() {
 
-    }
+  }
 
-    @RequestMapping(method = RequestMethod.GET)
-    public void p2() {
+  @RequestMapping(method = RequestMethod.GET)
+  public void p2() {
 
-    }
+  }
 }

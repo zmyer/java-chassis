@@ -17,51 +17,61 @@
 package io.servicecomb.common.rest.codec.param;
 
 import java.lang.reflect.Type;
+import java.util.Collections;
+import java.util.Enumeration;
+
+import javax.servlet.http.HttpServletRequest;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+
 import io.servicecomb.common.rest.codec.RestClientRequest;
 import io.servicecomb.common.rest.codec.RestObjectMapper;
-import io.servicecomb.common.rest.codec.RestServerRequest;
-
 import io.swagger.models.parameters.Parameter;
 
 public class HeaderProcessorCreator implements ParamValueProcessorCreator {
-    public static final String PARAMTYPE = "header";
+  public static final String PARAMTYPE = "header";
 
-    public static class HeaderProcessor extends AbstractParamProcessor {
-        public HeaderProcessor(String paramPath, JavaType targetType) {
-            super(paramPath, targetType);
-        }
-
-        @Override
-        public Object getValue(RestServerRequest request) throws Exception {
-            String param = request.getHeaderParam(paramPath);
-            if (param == null) {
-                return null;
-            }
-
-            return convertValue(param, targetType);
-        }
-
-        @Override
-        public void setValue(RestClientRequest clientRequest, Object arg) throws Exception {
-            clientRequest.putHeader(paramPath, RestObjectMapper.INSTANCE.convertToString(arg));
-        }
-
-        @Override
-        public String getProcessorType() {
-            return PARAMTYPE;
-        }
-    }
-
-    public HeaderProcessorCreator() {
-        ParamValueProcessorCreatorManager.INSTANCE.register(PARAMTYPE, this);
+  public static class HeaderProcessor extends AbstractParamProcessor {
+    public HeaderProcessor(String paramPath, JavaType targetType) {
+      super(paramPath, targetType);
     }
 
     @Override
-    public ParamValueProcessor create(Parameter parameter, Type genericParamType) {
-        JavaType targetType = TypeFactory.defaultInstance().constructType(genericParamType);
-        return new HeaderProcessor(parameter.getName(), targetType);
+    public Object getValue(HttpServletRequest request) throws Exception {
+      Object value = null;
+      if (targetType.isContainerType()) {
+        Enumeration<String> headerValues = request.getHeaders(paramPath);
+        if (headerValues == null) {
+          return null;
+        }
+
+        value = Collections.list(headerValues);
+      } else {
+        value = request.getHeader(paramPath);
+      }
+
+      return convertValue(value, targetType);
     }
+
+    @Override
+    public void setValue(RestClientRequest clientRequest, Object arg) throws Exception {
+      clientRequest.putHeader(paramPath, RestObjectMapper.INSTANCE.convertToString(arg));
+    }
+
+    @Override
+    public String getProcessorType() {
+      return PARAMTYPE;
+    }
+  }
+
+  public HeaderProcessorCreator() {
+    ParamValueProcessorCreatorManager.INSTANCE.register(PARAMTYPE, this);
+  }
+
+  @Override
+  public ParamValueProcessor create(Parameter parameter, Type genericParamType) {
+    JavaType targetType = TypeFactory.defaultInstance().constructType(genericParamType);
+    return new HeaderProcessor(parameter.getName(), targetType);
+  }
 }

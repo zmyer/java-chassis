@@ -15,24 +15,50 @@
  */
 package io.servicecomb.swagger.generator.core.schema;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 public class InvalidType {
-    public static interface InvalidIntf {
+  public static interface InvalidIntf {
 
-    }
+  }
 
-    public static abstract class InvalidClass {
+  public static abstract class InvalidClass {
 
-    }
+  }
 
-    public InvalidIntf testIntf(InvalidIntf input) {
-        return null;
-    }
+  public static class InvalidFieldClass {
+    public Object obj;
+  }
 
-    public InvalidClass testClass(InvalidClass input) {
-        return null;
-    }
+  public InvalidIntf testIntf(InvalidIntf input) {
+    return null;
+  }
 
-    public void testArray(User[] input) {
+  public InvalidClass testAbstractClass(InvalidClass input) {
+    return null;
+  }
 
-    }
+  public Object testObject() {
+    return null;
+  }
+
+  @SuppressWarnings("rawtypes")
+  public List testNotClearList() {
+    return null;
+  }
+
+  @SuppressWarnings("rawtypes")
+  public Set testNotClearSet() {
+    return null;
+  }
+
+  public Map<String, Object> testNotClearMap() {
+    return null;
+  }
+
+  public InvalidFieldClass testInvalidFieldClass() {
+    return null;
+  }
 }

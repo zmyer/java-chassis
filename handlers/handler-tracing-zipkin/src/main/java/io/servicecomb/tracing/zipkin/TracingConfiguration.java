@@ -16,19 +16,20 @@
 
 package io.servicecomb.tracing.zipkin;
 
-import static io.servicecomb.foundation.common.base.ServiceCombConstants.CONFIG_SERVICE_NAME;
+import static io.servicecomb.foundation.common.base.ServiceCombConstants.CONFIG_QUALIFIED_MICROSERVICE_NAME_KEY;
 import static io.servicecomb.foundation.common.base.ServiceCombConstants.CONFIG_TRACING_COLLECTOR_ADDRESS;
 import static io.servicecomb.foundation.common.base.ServiceCombConstants.CONFIG_TRACING_COLLECTOR_PATH;
-import static io.servicecomb.foundation.common.base.ServiceCombConstants.DEFAULT_SERVICE_NAME;
+import static io.servicecomb.foundation.common.base.ServiceCombConstants.DEFAULT_MICROSERVICE_NAME;
 import static io.servicecomb.foundation.common.base.ServiceCombConstants.DEFAULT_TRACING_COLLECTOR_ADDRESS;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import brave.Tracing;
 import brave.context.log4j12.MDCCurrentTraceContext;
 import brave.http.HttpTracing;
 import brave.propagation.CurrentTraceContext;
 import io.servicecomb.config.DynamicProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import zipkin.Span;
 import zipkin.reporter.AsyncReporter;
 import zipkin.reporter.Reporter;
@@ -55,11 +56,14 @@ class TracingConfiguration {
   }
 
   @Bean
-  Tracing tracing(Reporter<Span> reporter, DynamicProperties dynamicProperties, CurrentTraceContext currentTraceContext) {
+  Tracing tracing(Reporter<Span> reporter, DynamicProperties dynamicProperties,
+      CurrentTraceContext currentTraceContext) {
     return Tracing.newBuilder()
-        .localServiceName(dynamicProperties.getStringProperty(CONFIG_SERVICE_NAME, DEFAULT_SERVICE_NAME))
+        .localServiceName(dynamicProperties.getStringProperty(CONFIG_QUALIFIED_MICROSERVICE_NAME_KEY,
+            DEFAULT_MICROSERVICE_NAME))
         .currentTraceContext(currentTraceContext) // puts trace IDs into logs
-        .reporter(reporter).build();
+        .reporter(reporter)
+        .build();
   }
 
   @Bean
@@ -71,5 +75,4 @@ class TracingConfiguration {
   HttpTracing httpTracing(Tracing tracing) {
     return HttpTracing.create(tracing);
   }
-
 }

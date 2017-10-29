@@ -16,27 +16,14 @@
 
 package io.servicecomb.demo.springmvc.tests.endpoints;
 
-import io.servicecomb.common.rest.codec.RestObjectMapper;
-import io.servicecomb.demo.compute.Person;
-import io.servicecomb.demo.server.User;
-import io.servicecomb.provider.rest.common.RestSchema;
-import io.servicecomb.swagger.extend.annotations.ResponseHeaders;
-import io.servicecomb.swagger.invocation.Response;
-import io.servicecomb.swagger.invocation.context.ContextUtils;
-import io.servicecomb.swagger.invocation.context.InvocationContext;
-import io.servicecomb.swagger.invocation.response.Headers;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ResponseHeader;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response.Status;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -48,118 +35,114 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import io.servicecomb.demo.controller.Person;
+import io.servicecomb.demo.server.User;
+import io.servicecomb.provider.rest.common.RestSchema;
+import io.servicecomb.swagger.extend.annotations.ResponseHeaders;
+import io.servicecomb.swagger.invocation.Response;
+import io.servicecomb.swagger.invocation.context.InvocationContext;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ResponseHeader;
+
+@Profile("!SimplifiedMapping")
 @RestSchema(schemaId = "codeFirst")
 @RequestMapping(path = "/codeFirstSpringmvc", produces = MediaType.APPLICATION_JSON_VALUE)
-public class CodeFirstSpringmvc {
-
+public class CodeFirstSpringmvc extends CodeFirstSpringmvcBase {
   @ResponseHeaders({@ResponseHeader(name = "h1", response = String.class),
       @ResponseHeader(name = "h2", response = String.class)})
   @RequestMapping(path = "/responseEntity", method = RequestMethod.POST)
+  @Override
   public ResponseEntity<Date> responseEntity(InvocationContext c1, @RequestAttribute("date") Date date) {
-    HttpHeaders headers = new HttpHeaders();
-    headers.add("h1", "h1v " + c1.getContext().toString());
-
-    InvocationContext c2 = ContextUtils.getInvocationContext();
-    headers.add("h2", "h2v " + c2.getContext().toString());
-
-    return new ResponseEntity<Date>(date, headers, HttpStatus.ACCEPTED);
+    return super.responseEntity(c1, date);
   }
 
   @ApiResponse(code = 200, response = User.class, message = "")
   @ResponseHeaders({@ResponseHeader(name = "h1", response = String.class),
       @ResponseHeader(name = "h2", response = String.class)})
   @RequestMapping(path = "/cseResponse", method = RequestMethod.GET)
+  @Override
   public Response cseResponse(InvocationContext c1) {
-    Response response = Response.createSuccess(Status.ACCEPTED, new User());
-    Headers headers = response.getHeaders();
-    headers.addHeader("h1", "h1v " + c1.getContext().toString());
-
-    InvocationContext c2 = ContextUtils.getInvocationContext();
-    headers.addHeader("h2", "h2v " + c2.getContext().toString());
-
-    return response;
+    return super.cseResponse(c1);
   }
 
   @RequestMapping(path = "/testUserMap", method = RequestMethod.POST)
+  @Override
   public Map<String, User> testUserMap(@RequestBody Map<String, User> userMap) {
-    return userMap;
+    return super.testUserMap(userMap);
   }
 
   @RequestMapping(path = "/textPlain", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE)
+  @Override
   public String textPlain(@RequestBody String body) {
-    return body;
+    return super.textPlain(body);
   }
 
   @RequestMapping(path = "/bytes", method = RequestMethod.POST)
+  @Override
   public byte[] bytes(@RequestBody byte[] input) {
-    input[0] = (byte) (input[0] + 1);
-    return input;
+    return super.bytes(input);
   }
 
   @RequestMapping(path = "/addDate", method = RequestMethod.POST)
+  @Override
   public Date addDate(@RequestAttribute("date") Date date, @QueryParam("seconds") long seconds) {
-    return new Date(date.getTime() + seconds * 1000);
+    return super.addDate(date, seconds);
   }
 
   @RequestMapping(path = "/add", method = RequestMethod.POST)
+  @Override
   public int add(@RequestAttribute("a") int a, @RequestAttribute("b") int b) {
-    return a + b;
+    return super.add(a, b);
   }
 
   @RequestMapping(path = "/reduce", method = RequestMethod.GET)
   @ApiImplicitParams({@ApiImplicitParam(name = "a", dataType = "integer", format = "int32", paramType = "query")})
+  @Override
   public int reduce(HttpServletRequest request, @CookieValue(name = "b") int b) {
-    int a = Integer.parseInt(request.getParameter("a"));
-    return a - b;
+    return super.reduce(request, b);
   }
 
   @RequestMapping(path = "/sayhello", method = RequestMethod.POST)
+  @Override
   public Person sayHello(@RequestBody Person user) {
-    user.setName("hello " + user.getName());
-    return user;
+    return super.sayHello(user);
   }
 
-  @SuppressWarnings("unchecked")
   @RequestMapping(path = "/testrawjson", method = RequestMethod.POST)
+  @Override
   public String testRawJsonString(String jsonInput) {
-    Map<String, String> person;
-    try {
-      person = RestObjectMapper.INSTANCE.readValue(jsonInput.getBytes(), Map.class);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return null;
-    }
-    return "hello " + person.get("name");
+    return super.testRawJsonString(jsonInput);
   }
 
   @RequestMapping(path = "/saysomething", method = RequestMethod.POST)
+  @Override
   public String saySomething(@RequestHeader(name = "prefix") String prefix, @RequestBody Person user) {
-    return prefix + " " + user.getName();
+    return super.saySomething(prefix, user);
   }
 
   @RequestMapping(path = "/sayhi/{name}", method = RequestMethod.PUT)
+  @Override
   public String sayHi(@PathVariable(name = "name") String name) {
-    ContextUtils.getInvocationContext().setStatus(202);
-    return name + " sayhi";
+    return super.sayHi(name);
   }
 
   @RequestMapping(path = "/sayhi/{name}/v2", method = RequestMethod.PUT)
+  @Override
   public String sayHi2(@PathVariable(name = "name") String name) {
-    return name + " sayhi 2";
+    return super.sayHi2(name);
   }
 
   @RequestMapping(path = "/istrue", method = RequestMethod.GET)
+  @Override
   public boolean isTrue() {
-    return true;
+    return super.isTrue();
   }
 
   @RequestMapping(path = "/addstring", method = RequestMethod.DELETE, produces = MediaType.TEXT_PLAIN_VALUE)
+  @Override
   public String addString(@RequestParam(name = "s") List<String> s) {
-    String result = "";
-    for (String x : s) {
-      result += x;
-    }
-    return result;
+    return super.addString(s);
   }
-
 }

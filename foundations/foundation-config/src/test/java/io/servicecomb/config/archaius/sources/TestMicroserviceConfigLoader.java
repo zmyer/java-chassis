@@ -18,65 +18,87 @@ package io.servicecomb.config.archaius.sources;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestMicroserviceConfigLoader {
 
-    private final MicroserviceConfigLoader loader = new MicroserviceConfigLoader();
+  private final MicroserviceConfigLoader loader = new MicroserviceConfigLoader();
 
-    private ConfigModel createConfigModel(String protocol, int order, String file) throws MalformedURLException {
-        ConfigModel configModel = new ConfigModel();
-        configModel.setUrl(new URL(protocol, null, file));
-        configModel.setOrder(order);
-        return configModel;
-    }
+  private ConfigModel createConfigModel(String protocol, int order, String file) throws MalformedURLException {
+    ConfigModel configModel = new ConfigModel();
+    configModel.setUrl(new URL(protocol, null, file));
+    configModel.setOrder(order);
+    return configModel;
+  }
 
-    @Test
-    public void configsSortedByInsertionOrder() throws MalformedURLException {
-        loader.getConfigModels().add(createConfigModel("jar", 0, "c"));
-        loader.getConfigModels().add(createConfigModel("jar", 0, "b"));
-        loader.getConfigModels().add(createConfigModel("jar", 0, "a"));
+  @Test
+  public void configsSortedByInsertionOrder() throws MalformedURLException {
+    loader.getConfigModels().add(createConfigModel("jar", 0, "c"));
+    loader.getConfigModels().add(createConfigModel("jar", 0, "b"));
+    loader.getConfigModels().add(createConfigModel("jar", 0, "a"));
 
-        loader.sort();
+    loader.sort();
 
-        assertEquals(urls("jar:c", "jar:b", "jar:a"), urlsOf(loader.getConfigModels()));
-    }
+    assertEquals(urls("jar:c", "jar:b", "jar:a"), urlsOf(loader.getConfigModels()));
+  }
 
-    @Test
-    public void configsSortedBySpecifiedOrder() throws MalformedURLException {
-        loader.getConfigModels().add(createConfigModel("jar", 2, "a"));
-        loader.getConfigModels().add(createConfigModel("jar", 1, "b"));
-        loader.getConfigModels().add(createConfigModel("jar", 0, "c"));
+  @Test
+  public void configsSortedBySpecifiedOrder() throws MalformedURLException {
+    loader.getConfigModels().add(createConfigModel("jar", 1, "b"));
+    loader.getConfigModels().add(createConfigModel("jar", -10, "c"));
+    loader.getConfigModels().add(createConfigModel("jar", Integer.MAX_VALUE, "a"));
 
-        loader.sort();
+    loader.sort();
 
-        assertEquals(urls("jar:c", "jar:b", "jar:a"), urlsOf(loader.getConfigModels()));
-    }
+    assertEquals(urls("jar:c", "jar:b", "jar:a"), urlsOf(loader.getConfigModels()));
+  }
 
-    @Test
-    public void jarsAlwaysHaveHigherPriorityThanFiles() throws MalformedURLException {
-        loader.getConfigModels().add(createConfigModel("file", 0, "f2"));
-        loader.getConfigModels().add(createConfigModel("jar", 1, "j1"));
-        loader.getConfigModels().add(createConfigModel("file", 0, "f1"));
+  @Test
+  public void jarsAlwaysHaveHigherPriorityThanFiles() throws MalformedURLException {
+    loader.getConfigModels().add(createConfigModel("file", 0, "f2"));
+    loader.getConfigModels().add(createConfigModel("jar", 1, "j1"));
+    loader.getConfigModels().add(createConfigModel("file", 0, "f1"));
 
-        loader.sort();
+    loader.sort();
 
-        assertEquals(urls("jar:j1", "file:f2", "file:f1"), urlsOf(loader.getConfigModels()));
-    }
+    assertEquals(urls("jar:j1", "file:f2", "file:f1"), urlsOf(loader.getConfigModels()));
+  }
 
-    private String urlsOf(List<ConfigModel> configModels) {
-        return String.join(",",
-            configModels
+  private String urlsOf(List<ConfigModel> configModels) {
+    return String.join(",",
+        configModels
             .stream()
             .map(configModel -> configModel.getUrl().toString())
             .collect(Collectors.toList()));
-    }
+  }
 
   private String urls(String... urls) {
     return String.join(",", (CharSequence[]) urls);
+  }
+
+  @Test
+  public void testLoadEmptyYaml() throws IOException {
+    loader.load("empty.yaml");
+    Assert.assertTrue(loader.getConfigModels().get(0).getConfig().isEmpty());
+  }
+
+  @Test
+  public void testLoadNotExistYaml() throws IOException {
+    URL url = URI.create("file:/notExist.yaml").toURL();
+    try {
+      loader.load(url);
+      Assert.fail("must throw exception");
+    } catch (FileNotFoundException e) {
+      Assert.assertTrue(true);
+    }
   }
 }

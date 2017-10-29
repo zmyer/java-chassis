@@ -18,8 +18,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>io.servicecomb</groupId>
-    <artifactId>java-chassis</artifactId>
-    <version>0.1.1-SNAPSHOT</version>
+    <artifactId>java-chassis-parent</artifactId>
+    <version>0.4.0</version>
+    <relativePath>../parent</relativePath>
   </parent>
   <artifactId>sprint-boot-starter-parent</artifactId>
   <packaging>pom</packaging>
@@ -28,6 +29,7 @@
     <module>spring-boot-starter-provider</module>
     <module>spring-boot-starter-transport</module>
     <module>spring-boot-starter-discovery</module>
+    <module>spring-cloud-zuul</module>
     <module>spring-cloud-zuul-zipkin</module>
     <module>spring-boot-starter-servicecomb</module>
   </modules>

@@ -17,18 +17,33 @@
 package io.servicecomb.common.rest;
 
 public final class RestConst {
-    private RestConst() {
-    }
+  private RestConst() {
+  }
 
-    public static final String HTTP_REQUEST_CREATOR = "server-http-request-creator";
+  public static final String REST_CLIENT_REQUEST_PATH = "rest-client-request-path";
 
-    public static final String REST_CLIENT_REQUEST_PATH = "rest-client-request-path";
+  public static final String SWAGGER_REST_OPERATION = "swaggerRestOperation";
 
-    public static final String SWAGGER_REST_OPERATION = "swaggerRestOperation";
+  public static final String REST = "rest";
 
-    public static final String REST = "rest";
+  public static final String SCHEME = "cse";
 
-    public static final String SCHEME = "cse";
+  public static final String URI_PREFIX = SCHEME + "://";
 
-    public static final String URI_PREFIX = SCHEME + "://";
+  // in HttpServletRequest attribute
+  public static final String PATH_PARAMETERS = "servicecomb-paths";
+
+  // in HttpServletRequest attribute
+  public static final String BODY_PARAMETER = "servicecomb-body";
+
+  // in HttpServletRequest attribute
+  public static final String FORM_PARAMETERS = "servicecomb-forms";
+
+  public static final String REST_PRODUCER_INVOCATION = "servicecomb-rest-producer-invocation";
+
+  public static final String REST_REQUEST = "servicecomb-rest-request";
+
+  public static final String REST_STATE_EXECUTING = "servicecomb-rest-state-executing";
+
+  public static final String CONSUMER_HEADER = "servicecomb-rest-consumer-header";
 }

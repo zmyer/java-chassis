@@ -16,39 +16,71 @@
 
 package io.servicecomb.transport.rest.servlet;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
+import java.util.HashMap;
+import java.util.Map;
 
-import io.servicecomb.core.Const;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
 import io.servicecomb.core.Invocation;
 import io.servicecomb.core.transport.AbstractTransport;
+import io.servicecomb.foundation.common.net.URIEndpointObject;
+import io.servicecomb.serviceregistry.api.Const;
+import io.servicecomb.swagger.invocation.AsyncResponse;
 import io.servicecomb.transport.rest.client.RestTransportClient;
 import io.servicecomb.transport.rest.client.RestTransportClientManager;
-import io.servicecomb.foundation.common.net.URIEndpointObject;
-import io.servicecomb.swagger.invocation.AsyncResponse;
 
 @Component
 public class ServletRestTransport extends AbstractTransport {
-    @Override
-    public String getName() {
-        return Const.RESTFUL;
+  private static final Logger LOGGER = LoggerFactory.getLogger(ServletRestTransport.class);
+
+  @Override
+  public String getName() {
+    return io.servicecomb.core.Const.RESTFUL;
+  }
+
+  @Override
+  public boolean canInit() {
+    String listenAddress = ServletConfig.getLocalServerAddress();
+    if (listenAddress == null) {
+      // not publish, but can init and be RESTful client
+      return true;
     }
 
-    @Override
-    public boolean init() throws Exception {
-        String listenAddress = ServletConfig.getLocalServerAddress();
-        if (!StringUtils.isEmpty(listenAddress)) {
-            setListenAddressWithoutSchema(listenAddress);
-        }
-
-        return true;
+    if (!ServletUtils.canPublishEndpoint(listenAddress)) {
+      LOGGER.info("ignore transport {}.", this.getClass().getName());
+      return false;
     }
 
-    @Override
-    public void send(Invocation invocation, AsyncResponse asyncResp) throws Exception {
-        URIEndpointObject endpoint = (URIEndpointObject) invocation.getEndpoint().getAddress();
-        RestTransportClient client =
-            RestTransportClientManager.INSTANCE.getRestTransportClient(endpoint.isSslEnabled());
-        client.send(invocation, asyncResp);
+    return true;
+  }
+
+  @Override
+  public boolean init() {
+    String urlPrefix = System.getProperty(Const.URL_PREFIX);
+    Map<String, String> queryMap = new HashMap<>();
+    if (!StringUtils.isEmpty(urlPrefix)) {
+      queryMap.put(Const.URL_PREFIX, urlPrefix);
     }
+
+    String listenAddress = ServletConfig.getLocalServerAddress();
+    setListenAddressWithoutSchema(listenAddress, queryMap);
+
+    return deployClient();
+  }
+
+  private boolean deployClient() {
+    return RestTransportClientManager.INSTANCE.getRestTransportClient(true) != null &&
+        RestTransportClientManager.INSTANCE.getRestTransportClient(false) != null;
+  }
+
+  @Override
+  public void send(Invocation invocation, AsyncResponse asyncResp) throws Exception {
+    URIEndpointObject endpoint = (URIEndpointObject) invocation.getEndpoint().getAddress();
+    RestTransportClient client =
+        RestTransportClientManager.INSTANCE.getRestTransportClient(endpoint.isSslEnabled());
+    client.send(invocation, asyncResp);
+  }
 }

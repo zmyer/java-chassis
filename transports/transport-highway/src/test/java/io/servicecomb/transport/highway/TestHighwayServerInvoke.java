@@ -29,64 +29,92 @@ import io.servicecomb.foundation.vertx.tcp.TcpConnection;
 import io.servicecomb.transport.common.MockUtil;
 import io.servicecomb.transport.highway.message.RequestHeader;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.net.NetSocket;
+import io.vertx.core.net.SocketAddress;
 import mockit.Mock;
 import mockit.MockUp;
 
 public class TestHighwayServerInvoke {
-    class Impl {
-        public int add(int x, int y) {
-            return x + y;
-        }
+  class Impl {
+    public int add(int x, int y) {
+      return x + y;
     }
+  }
 
-    private UnitTestMeta unitTestMeta;
+  private UnitTestMeta unitTestMeta;
 
-    private ByteBuf netSocketBuffer;
+  private ByteBuf netSocketBuffer;
 
-    private TcpConnection connection;
+  private TcpConnection connection;
 
-    @Before
-    public void setup() {
-        unitTestMeta = new UnitTestMeta();
-        connection = new MockUp<TcpConnection>() {
-            @Mock
-            public void write(ByteBuf data) {
-                netSocketBuffer = data;
-            }
-        }.getMockInstance();
-    }
+  private NetSocket netSocket;
 
-    @Test
-    public void test() {
-        MockUtil.getInstance().mockHighwayCodec();
+  private SocketAddress socketAddress;
 
-        SchemaMeta schemaMeta = unitTestMeta.getOrCreateSchemaMeta(Impl.class);
-        OperationMeta operationMeta = schemaMeta.ensureFindOperation("add");
-        operationMeta.setExecutor(new ReactiveExecutor());
+  @Before
+  public void setup() {
+    unitTestMeta = new UnitTestMeta();
+    socketAddress = new MockUp<SocketAddress>() {
+      @Mock
+      public String host() {
+        return "127.0.0.1";
+      }
 
-        HighwayServerInvoke highwayServerInvoke = new HighwayServerInvoke();
-        highwayServerInvoke.setMicroserviceMetaManager(unitTestMeta.getMicroserviceMetaManager());
+      @Mock
+      public int port() {
+        return 8080;
+      }
+    }.getMockInstance();
+    netSocket = new MockUp<NetSocket>() {
+      @Mock
+      public SocketAddress remoteAddress() {
+        return socketAddress;
+      }
+    }.getMockInstance();
+    connection = new MockUp<TcpConnection>() {
+      @Mock
+      public void write(ByteBuf data) {
+        netSocketBuffer = data;
+      }
 
-        RequestHeader requestHeader = MockUtil.getInstance().requestHeader;
+      @Mock
+      public NetSocket getNetSocket() {
+        return netSocket;
+      }
+    }.getMockInstance();
+  }
 
-        // 初始化失败
-        requestHeader.setDestMicroservice(null);
-        Assert.assertFalse(highwayServerInvoke.init(connection, 0, null, null));
+  @Test
+  public void test() {
+    MockUtil.getInstance().mockHighwayCodec();
 
-        // 初始化成功
-        requestHeader.setDestMicroservice(schemaMeta.getMicroserviceName());
-        requestHeader.setSchemaId(schemaMeta.getSchemaId());
-        requestHeader.setOperationName(operationMeta.getOperationId());
-        Assert.assertTrue(highwayServerInvoke.init(connection, 0, requestHeader, null));
+    SchemaMeta schemaMeta = unitTestMeta.getOrCreateSchemaMeta(Impl.class);
+    OperationMeta operationMeta = schemaMeta.ensureFindOperation("add");
+    operationMeta.setExecutor(new ReactiveExecutor());
 
-        // exe成功
-        netSocketBuffer = null;
-        highwayServerInvoke.execute();
-        Assert.assertEquals(null, netSocketBuffer);
+    HighwayServerInvoke highwayServerInvoke = new HighwayServerInvoke();
+    highwayServerInvoke.setMicroserviceMetaManager(unitTestMeta.getMicroserviceMetaManager());
 
-        // exe失败
-        MockUtil.getInstance().decodeRequestSucc = false;
-        highwayServerInvoke.execute();
-        Assert.assertEquals(true, Buffer.buffer(netSocketBuffer).toString().startsWith("CSE.TCP"));
-    }
+    RequestHeader requestHeader = MockUtil.getInstance().requestHeader;
+
+    // 初始化失败
+    requestHeader.setDestMicroservice(null);
+    Assert.assertFalse(highwayServerInvoke.init(connection, 0, null, null));
+
+    // 初始化成功
+    requestHeader.setDestMicroservice(schemaMeta.getMicroserviceName());
+    requestHeader.setSchemaId(schemaMeta.getSchemaId());
+    requestHeader.setOperationName(operationMeta.getOperationId());
+    Assert.assertTrue(highwayServerInvoke.init(connection, 0, requestHeader, null));
+
+    // exe成功
+    netSocketBuffer = null;
+    highwayServerInvoke.execute();
+    Assert.assertEquals(null, netSocketBuffer);
+
+    // exe失败
+    MockUtil.getInstance().decodeRequestSucc = false;
+    highwayServerInvoke.execute();
+    Assert.assertEquals(true, Buffer.buffer(netSocketBuffer).toString().startsWith("CSE.TCP"));
+  }
 }

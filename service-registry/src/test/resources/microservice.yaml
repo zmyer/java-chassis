@@ -5,6 +5,13 @@ service_description:
     key1: value1
     key2: value2
   propertyExtentedClass: io.servicecomb.serviceregistry.MicroServicePropertyExtendedStub
+  paths:
+    - path: /test1/testpath
+      property:
+        checksession: false
+    - path: /test2/testpath
+      property:
+        checksession: true
 instance_description:
   properties:
     key0: value0
@@ -13,7 +20,7 @@ instance_description:
 cse:
   service:
     registry:
-      address: http://127.0.0.1:9980
+      address: http://127.0.0.1:30100
       client:
         httpVersion: HTTP_1_1
         workerPoolSize: 1
@@ -26,6 +33,10 @@ cse:
         healthCheck:
           interval: 1
           times: 5
+  datacenter:
+    name: myDC
+    region: my-Region
+    availableZone: my-Zone
 #ssl.keystore.path=
 #ssl.keystore.pass=
 #ssl.truststore.path=

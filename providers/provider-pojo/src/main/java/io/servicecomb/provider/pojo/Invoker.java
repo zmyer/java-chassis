@@ -16,45 +16,82 @@
 
 package io.servicecomb.provider.pojo;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+
+import org.springframework.util.StringUtils;
+
+import io.servicecomb.core.CseContext;
 import io.servicecomb.core.Invocation;
+import io.servicecomb.core.definition.MicroserviceMeta;
 import io.servicecomb.core.definition.SchemaMeta;
 import io.servicecomb.core.invocation.InvocationFactory;
 import io.servicecomb.core.provider.consumer.InvokerUtils;
 import io.servicecomb.core.provider.consumer.ReferenceConfig;
+import io.servicecomb.core.provider.consumer.ReferenceConfigUtils;
 import io.servicecomb.swagger.engine.SwaggerConsumer;
 import io.servicecomb.swagger.engine.SwaggerConsumerOperation;
 import io.servicecomb.swagger.invocation.Response;
 import io.servicecomb.swagger.invocation.exception.ExceptionFactory;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 
 public class Invoker implements InvocationHandler {
-    private SchemaMeta schemaMeta;
+  // 原始数据
+  private String microserviceName;
 
-    private ReferenceConfig config;
+  private String schemaId;
 
-    private SwaggerConsumer swaggerConsumer;
+  private Class<?> consumerIntf;
 
-    public void init(ReferenceConfig config, SchemaMeta schemaMeta,
-            SwaggerConsumer swaggerConsumer) {
-        this.config = config;
-        this.schemaMeta = schemaMeta;
-        this.swaggerConsumer = swaggerConsumer;
+  // 生成的数据
+  private SchemaMeta schemaMeta;
+
+  private ReferenceConfig referenceConfig;
+
+  private SwaggerConsumer swaggerConsumer;
+
+  public Invoker(String microserviceName, String schemaId, Class<?> consumerIntf) {
+    this.microserviceName = microserviceName;
+    this.schemaId = schemaId;
+    this.consumerIntf = consumerIntf;
+  }
+
+  protected void prepare() {
+    referenceConfig = ReferenceConfigUtils.getForInvoke(microserviceName);
+    MicroserviceMeta microserviceMeta = referenceConfig.getMicroserviceMeta();
+
+    if (StringUtils.isEmpty(schemaId)) {
+      // 未指定schemaId，看看consumer接口是否等于契约接口
+      schemaMeta = microserviceMeta.findSchemaMeta(consumerIntf);
+      if (schemaMeta == null) {
+        // 尝试用consumer接口名作为schemaId
+        schemaId = consumerIntf.getName();
+        schemaMeta = microserviceMeta.ensureFindSchemaMeta(schemaId);
+      }
+    } else {
+      schemaMeta = microserviceMeta.ensureFindSchemaMeta(schemaId);
     }
 
-    @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        Invocation invocation =
-            InvocationFactory.forConsumer(config, schemaMeta, method.getName(), null);
+    this.swaggerConsumer = CseContext.getInstance().getSwaggerEnvironment().createConsumer(consumerIntf,
+        schemaMeta.getSwaggerIntf());
+  }
 
-        SwaggerConsumerOperation consumerOperation = swaggerConsumer.findOperation(method.getName());
-        consumerOperation.getArgumentsMapper().toInvocation(args, invocation);
-
-        Response response = InvokerUtils.innerSyncInvoke(invocation);
-        if (response.isSuccessed()) {
-            return consumerOperation.getResponseMapper().mapResponse(response);
-        }
-
-        throw ExceptionFactory.convertConsumerException(response.getResult());
+  @Override
+  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    if (swaggerConsumer == null) {
+      prepare();
     }
+
+    Invocation invocation =
+        InvocationFactory.forConsumer(referenceConfig, schemaMeta, method.getName(), null);
+
+    SwaggerConsumerOperation consumerOperation = swaggerConsumer.findOperation(method.getName());
+    consumerOperation.getArgumentsMapper().toInvocation(args, invocation);
+
+    Response response = InvokerUtils.innerSyncInvoke(invocation);
+    if (response.isSuccessed()) {
+      return consumerOperation.getResponseMapper().mapResponse(response);
+    }
+
+    throw ExceptionFactory.convertConsumerException(response.getResult());
+  }
 }

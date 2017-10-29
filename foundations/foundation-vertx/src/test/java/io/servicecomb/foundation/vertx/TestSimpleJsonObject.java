@@ -19,12 +19,18 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class TestSimpleJsonObject {
-    @Test
-    public void test() {
-        Object value = new Object();
-        
-        SimpleJsonObject json = new SimpleJsonObject();
-        json.put("k", value);
-        Assert.assertEquals(value, json.getValue("k"));
-    }
+  @Test
+  public void testPutObject() {
+    Object value = new Object();
+
+    SimpleJsonObject json = new SimpleJsonObject();
+    json.put("k", value);
+    Assert.assertSame(value, json.getValue("k"));
+  }
+
+  @Test
+  public void testCopy() {
+    SimpleJsonObject json = new SimpleJsonObject();
+    Assert.assertSame(json, json.copy());
+  }
 }

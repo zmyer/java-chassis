@@ -5,8 +5,13 @@ service_description:
 cse:
   service:
     registry:
-      address: http://127.0.0.1:9980
+      address: http://127.0.0.1:30100
   handler:
     chain:
       Consumer:
         default: bizkeeper-consumer,loadbalance
+  loadbalance:
+    strategy:
+      name: mycustomrule
+    retryEnabled: true
+    retryHandler: mycustomhandler

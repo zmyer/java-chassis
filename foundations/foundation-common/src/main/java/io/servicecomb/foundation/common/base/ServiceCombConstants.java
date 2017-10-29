@@ -16,21 +16,33 @@
 
 package io.servicecomb.foundation.common.base;
 
-public class ServiceCombConstants {
+public interface ServiceCombConstants {
 
-  public static final String CONFIG_APPLICATION_ID = "APPLICATION_ID";
+  String CONFIG_APPLICATION_ID_KEY = "APPLICATION_ID";
 
-  public static final String CONFIG_SERVICE = "service_description";
-  public static final String CONFIG_SERVICE_NAME = CONFIG_SERVICE + ".name";
-  public static final String CONFIG_SERVICE_VERSION = CONFIG_SERVICE + ".version";
-  public static final String CONFIG_SERVICE_ROLE = CONFIG_SERVICE + ".role";
-  public static final String CONFIG_SERVICE_DESCRIPTION = CONFIG_SERVICE + ".description";
+  String CONFIG_SERVICE_DESCRIPTION_KEY = "service_description";
 
-  public static final String DEFAULT_SERVICE_NAME = "anonymous-service";
+  String CONFIG_MICROSERVICE_NAME_KEY = "name";
 
-  public static final String CONFIG_TRACING_COLLECTOR_ADDRESS = "servicecomb.tracing.collector.address";
-  public static final String CONFIG_TRACING_COLLECTOR_PATH = "/api/v1/spans";
-  public static final String DEFAULT_TRACING_COLLECTOR_ADDRESS = "http://127.0.0.1:9411";
-  public static final String CONFIG_SERVICECOMB_PREFIX = "servicecomb.";
-  public static final String CONFIG_CSE_PREFIX = "cse.";
+  String CONFIG_QUALIFIED_MICROSERVICE_NAME_KEY = CONFIG_SERVICE_DESCRIPTION_KEY + "." + CONFIG_MICROSERVICE_NAME_KEY;
+
+  String CONFIG_QUALIFIED_MICROSERVICE_VERSION_KEY = CONFIG_SERVICE_DESCRIPTION_KEY + ".version";
+
+  String CONFIG_QUALIFIED_MICROSERVICE_ROLE_KEY = CONFIG_SERVICE_DESCRIPTION_KEY + ".role";
+
+  String CONFIG_QUALIFIED_MICROSERVICE_DESCRIPTION_KEY = CONFIG_SERVICE_DESCRIPTION_KEY + ".description";
+
+  String DEFAULT_MICROSERVICE_NAME = "defaultMicroservice";
+
+  String CONFIG_TRACING_COLLECTOR_ADDRESS = "servicecomb.tracing.collector.address";
+
+  String CONFIG_TRACING_ENABLED_KEY = "servicecomb.tracing.enabled";
+
+  String CONFIG_TRACING_COLLECTOR_PATH = "/api/v1/spans";
+
+  String DEFAULT_TRACING_COLLECTOR_ADDRESS = "http://127.0.0.1:9411";
+
+  String CONFIG_SERVICECOMB_PREFIX = "servicecomb.";
+
+  String CONFIG_CSE_PREFIX = "cse.";
 }

@@ -16,10 +16,13 @@
 
 package io.servicecomb.tests.tracing;
 
-import io.servicecomb.provider.pojo.RpcReference;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import io.servicecomb.provider.pojo.RpcReference;
+import io.servicecomb.tracing.zipkin.EnableZipkinTracing;
+
+@EnableZipkinTracing
 @Configuration
 class TracedPojoConfig {
 
@@ -29,5 +32,10 @@ class TracedPojoConfig {
   @Bean
   TracedPojo tracedPojo() {
     return tracedPojo;
+  }
+
+  @Bean
+  SlowRepo slowRepo() {
+    return new SlowRepoImpl();
   }
 }

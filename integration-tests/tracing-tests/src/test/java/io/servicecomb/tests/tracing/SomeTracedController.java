@@ -19,9 +19,8 @@ package io.servicecomb.tests.tracing;
 import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
-import io.servicecomb.provider.rest.common.RestSchema;
-import java.util.Random;
 import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,21 +28,25 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import io.servicecomb.provider.rest.common.RestSchema;
+
 @RestSchema(schemaId = "someTracedRestEndpoint")
 @RestController
 @RequestMapping("/")
 public class SomeTracedController {
   private static final Logger logger = LoggerFactory.getLogger(SomeTracedController.class);
-  private final Random random = new Random();
 
   @Autowired
   private RestTemplate template;
 
+  @Autowired
+  private SlowRepo slowRepo;
+
   @RequestMapping(value = "/hello", method = GET, produces = TEXT_PLAIN_VALUE)
   public String hello(HttpServletRequest request) throws InterruptedException {
     logger.info("in /hello");
-    Thread.sleep(random.nextInt(1000));
 
+    slowRepo.crawl();
     return "hello world, " + template.getForObject("cse://tracing-service/jaxrs/bonjour", String.class);
   }
 }

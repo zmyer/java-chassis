@@ -17,12 +17,24 @@
 
 package io.servicecomb.demo.springmvc.tests;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = SpringMvcSpringMain.class)
 public class SpringMvcSpringIntegrationTest extends SpringMvcIntegrationTestBase {
+  private static ConfigurableApplicationContext context;
 
+  @BeforeClass
+  public static void init() throws Exception {
+    context = SpringApplication.run(SpringMvcSpringMain.class);
+  }
+
+  @AfterClass
+  public static void shutdown() throws Exception {
+    context.close();
+  }
 }

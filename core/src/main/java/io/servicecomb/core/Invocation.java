@@ -29,139 +29,143 @@ import io.servicecomb.swagger.invocation.InvocationType;
 import io.servicecomb.swagger.invocation.SwaggerInvocation;
 
 public class Invocation extends SwaggerInvocation {
-    private ReferenceConfig referenceConfig;
+  private ReferenceConfig referenceConfig;
 
-    // 本次调用对应的schemaMeta
-    private SchemaMeta schemaMeta;
+  // 本次调用对应的schemaMeta
+  private SchemaMeta schemaMeta;
 
-    // 本次调用对应的operatoinMeta
-    private OperationMeta operationMeta;
+  // 本次调用对应的operatoinMeta
+  private OperationMeta operationMeta;
 
-    // loadbalance查询得到的地址，由transport client使用
-    // 之所以不放在handlerContext中，是因为这属于核心数据，没必要走那样的机制
-    private Endpoint endpoint;
+  // loadbalance查询得到的地址，由transport client使用
+  // 之所以不放在handlerContext中，是因为这属于核心数据，没必要走那样的机制
+  private Endpoint endpoint;
 
-    // 只用于handler之间传递数据，是本地数据
-    private Map<String, Object> handlerContext = new HashMap<>();
+  // 只用于handler之间传递数据，是本地数据
+  private Map<String, Object> handlerContext = new HashMap<>();
 
-    // handler链，是arrayList，可以高效地通过index访问
-    private List<Handler> handlerList;
+  // handler链，是arrayList，可以高效地通过index访问
+  private List<Handler> handlerList;
 
-    private int handlerIndex;
+  private int handlerIndex;
 
-    // 应答的处理器
-    // 同步模式：避免应答在网络线程中处理解码等等业务级逻辑
-    private Executor responseExecutor;
+  // 应答的处理器
+  // 同步模式：避免应答在网络线程中处理解码等等业务级逻辑
+  private Executor responseExecutor;
 
-    public Invocation(ReferenceConfig referenceConfig, OperationMeta operationMeta, Object[] swaggerArguments) {
-        this.invocationType = InvocationType.CONSUMER;
-        this.referenceConfig = referenceConfig;
-        init(operationMeta, swaggerArguments);
+  public Invocation(ReferenceConfig referenceConfig, OperationMeta operationMeta, Object[] swaggerArguments) {
+    this.invocationType = InvocationType.CONSUMER;
+    this.referenceConfig = referenceConfig;
+    init(operationMeta, swaggerArguments);
+  }
+
+  public Invocation(Endpoint endpoint, OperationMeta operationMeta, Object[] swaggerArguments) {
+    this.invocationType = InvocationType.PRODUCER;
+    this.endpoint = endpoint;
+    init(operationMeta, swaggerArguments);
+  }
+
+  private void init(OperationMeta operationMeta, Object[] swaggerArguments) {
+    this.schemaMeta = operationMeta.getSchemaMeta();
+    this.operationMeta = operationMeta;
+    this.swaggerArguments = swaggerArguments;
+    this.handlerList = getHandlerChain();
+    handlerIndex = 0;
+  }
+
+  public Transport getTransport() {
+    if (endpoint == null) {
+      throw new IllegalStateException("Endpoint is empty. Forget to configure \"loadbalance\" in consumer handler chain?");
     }
+    return endpoint.getTransport();
+  }
 
-    public Invocation(Endpoint endpoint, OperationMeta operationMeta, Object[] swaggerArguments) {
-        this.invocationType = InvocationType.PRODUCER;
-        this.endpoint = endpoint;
-        init(operationMeta, swaggerArguments);
-    }
+  public List<Handler> getHandlerChain() {
+    return (InvocationType.CONSUMER.equals(invocationType)) ? schemaMeta.getConsumerHandlerChain()
+        : schemaMeta.getProviderHandlerChain();
+  }
 
-    private void init(OperationMeta operationMeta, Object[] swaggerArguments) {
-        this.schemaMeta = operationMeta.getSchemaMeta();
-        this.operationMeta = operationMeta;
-        this.swaggerArguments = swaggerArguments;
-        this.handlerList = getHandlerChain();
-        handlerIndex = 0;
-    }
+  public Executor getResponseExecutor() {
+    return responseExecutor;
+  }
 
-    public Transport getTransport() {
-        return endpoint.getTransport();
-    }
+  public void setResponseExecutor(Executor responseExecutor) {
+    this.responseExecutor = responseExecutor;
+  }
 
-    public List<Handler> getHandlerChain() {
-        return (InvocationType.CONSUMER.equals(invocationType)) ? schemaMeta.getConsumerHandlerChain()
-                : schemaMeta.getProviderHandlerChain();
-    }
+  public SchemaMeta getSchemaMeta() {
+    return schemaMeta;
+  }
 
-    public Executor getResponseExecutor() {
-        return responseExecutor;
-    }
+  public OperationMeta getOperationMeta() {
+    return operationMeta;
+  }
 
-    public void setResponseExecutor(Executor responseExecutor) {
-        this.responseExecutor = responseExecutor;
-    }
+  public Object[] getArgs() {
+    return swaggerArguments;
+  }
 
-    public SchemaMeta getSchemaMeta() {
-        return schemaMeta;
-    }
+  public Endpoint getEndpoint() {
+    return endpoint;
+  }
 
-    public OperationMeta getOperationMeta() {
-        return operationMeta;
-    }
+  public void setEndpoint(Endpoint endpoint) {
+    this.endpoint = endpoint;
+  }
 
-    public Object[] getArgs() {
-        return swaggerArguments;
-    }
+  public Map<String, Object> getHandlerContext() {
+    return handlerContext;
+  }
 
-    public Endpoint getEndpoint() {
-        return endpoint;
-    }
+  public int getHandlerIndex() {
+    return handlerIndex;
+  }
 
-    public void setEndpoint(Endpoint endpoint) {
-        this.endpoint = endpoint;
-    }
+  public void setHandlerIndex(int handlerIndex) {
+    this.handlerIndex = handlerIndex;
+  }
 
-    public Map<String, Object> getHandlerContext() {
-        return handlerContext;
-    }
+  public void next(AsyncResponse asyncResp) throws Exception {
+    // 不必判断有效性，因为整个流程都是内部控制的
+    int runIndex = handlerIndex;
+    handlerIndex++;
+    handlerList.get(runIndex).handle(this, asyncResp);
+  }
 
-    public int getHandlerIndex() {
-        return handlerIndex;
-    }
+  public String getSchemaId() {
+    return schemaMeta.getSchemaId();
+  }
 
-    public void setHandlerIndex(int handlerIndex) {
-        this.handlerIndex = handlerIndex;
-    }
+  public String getOperationName() {
+    return operationMeta.getOperationId();
+  }
 
-    public void next(AsyncResponse asyncResp) throws Exception {
-        // 不必判断有效性，因为整个流程都是内部控制的
-        int runIndex = handlerIndex;
-        handlerIndex++;
-        handlerList.get(runIndex).handle(this, asyncResp);
-    }
+  public String getConfigTransportName() {
+    return referenceConfig.getTransport();
+  }
 
-    public String getSchemaId() {
-        return schemaMeta.getSchemaId();
-    }
+  public String getRealTransportName() {
+    return (endpoint != null) ? endpoint.getTransport().getName() : getConfigTransportName();
+  }
 
-    public String getOperationName() {
-        return operationMeta.getOperationId();
-    }
+  public String getMicroserviceName() {
+    return schemaMeta.getMicroserviceName();
+  }
 
-    public String getConfigTransportName() {
-        return referenceConfig.getTransport();
-    }
+  public String getAppId() {
+    return schemaMeta.getMicroserviceMeta().getAppId();
+  }
 
-    public String getRealTransportName() {
-        return (endpoint != null) ? endpoint.getTransport().getName() : getConfigTransportName();
-    }
+  public String getMicroserviceVersionRule() {
+    return referenceConfig.getMicroserviceVersionRule();
+  }
 
-    public String getMicroserviceName() {
-        return schemaMeta.getMicroserviceName();
-    }
+  public String getInvocationQualifiedName() {
+    return invocationType.name() + " " + getRealTransportName() + " "
+        + getOperationMeta().getMicroserviceQualifiedName();
+  }
 
-    public String getAppId() {
-        return schemaMeta.getMicroserviceMeta().getAppId();
-    }
-
-    public String getMicroserviceVersionRule() {
-        return referenceConfig.getMicroserviceVersionRule();
-    }
-
-    public String getInvocationQualifiedName() {
-        return invocationType.name() + " " + getRealTransportName() + " "
-                + getOperationMeta().getMicroserviceQualifiedName();
-    }
-    public String getMicroserviceQualifiedName() {
-        return operationMeta.getMicroserviceQualifiedName();
-    }    
+  public String getMicroserviceQualifiedName() {
+    return operationMeta.getMicroserviceQualifiedName();
+  }
 }

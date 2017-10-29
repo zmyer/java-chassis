@@ -16,9 +16,11 @@
 
 package io.servicecomb.core.transport;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.inject.Inject;
 
@@ -28,35 +30,93 @@ import org.springframework.stereotype.Component;
 
 import io.servicecomb.core.Endpoint;
 import io.servicecomb.core.Transport;
+import io.servicecomb.foundation.common.exceptions.ServiceCombException;
 import io.servicecomb.serviceregistry.RegistryUtils;
 import io.servicecomb.serviceregistry.api.registry.Microservice;
 
 @Component
 public class TransportManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TransportManager.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TransportManager.class);
 
-    @Inject
-    private List<Transport> transportList;
+  @Inject
+  private List<Transport> transports;
 
-    private Map<String, Transport> transportMap = new HashMap<>();
+  private Map<String, Transport> transportMap = new HashMap<>();
 
-    public void init() throws Exception {
-        for (Transport transport : transportList) {
-            transportMap.put(transport.getName(), transport);
+  public void setTransports(List<Transport> transports) {
+    this.transports = transports;
+  }
 
-            if (transport.init()) {
-                Endpoint endpoint = transport.getPublishEndpoint();
-                if (endpoint != null && endpoint.getEndpoint() != null) {
-                    LOGGER.info("endpoint to publish: {}", endpoint.getEndpoint());
-                    Microservice microservice = RegistryUtils.getMicroservice();
-                    microservice.getIntance().getEndpoints().add(endpoint.getEndpoint());
-                }
-                continue;
-            }
+  public void init() throws Exception {
+    buildTransportMap();
+
+    for (Transport transport : transportMap.values()) {
+      if (transport.init()) {
+        Endpoint endpoint = transport.getPublishEndpoint();
+        if (endpoint != null && endpoint.getEndpoint() != null) {
+          LOGGER.info("endpoint to publish: {}", endpoint.getEndpoint());
+          Microservice microservice = RegistryUtils.getMicroservice();
+          microservice.getIntance().getEndpoints().add(endpoint.getEndpoint());
         }
+        continue;
+      }
+    }
+  }
+
+  protected void buildTransportMap() {
+    Map<String, List<Transport>> groups = groupByName();
+
+    for (Entry<String, List<Transport>> entry : groups.entrySet()) {
+      List<Transport> group = entry.getValue();
+
+      checkTransportGroup(group);
+      Transport transport = chooseOneTransport(group);
+      transportMap.put(transport.getName(), transport);
+    }
+  }
+
+  protected Transport chooseOneTransport(List<Transport> group) {
+    group.sort((t1, t2) -> {
+      return Integer.compare(t1.getOrder(), t2.getOrder());
+    });
+
+    for (Transport transport : group) {
+      if (transport.canInit()) {
+        LOGGER.info("choose {} for {}.", transport.getClass().getName(), transport.getName());
+        return transport;
+      }
     }
 
-    public Transport findTransport(String transportName) {
-        return transportMap.get(transportName);
+    throw new ServiceCombException(
+        String.format("all transport named %s refused to init.", group.get(0).getName()));
+  }
+
+  protected void checkTransportGroup(List<Transport> group) {
+    // order value must be different, otherwise, maybe will choose a random transport
+    Map<Integer, Transport> orderMap = new HashMap<>();
+    for (Transport transport : group) {
+      Transport existTransport = orderMap.putIfAbsent(transport.getOrder(), transport);
+      if (existTransport != null) {
+        throw new ServiceCombException(String.format("%s and %s have the same order %d",
+            existTransport.getClass().getName(),
+            transport.getClass().getName(),
+            transport.getOrder()));
+      }
     }
+  }
+
+  protected Map<String, List<Transport>> groupByName() {
+    Map<String, List<Transport>> groups = new HashMap<>();
+    for (Transport transport : transports) {
+      List<Transport> list = groups.computeIfAbsent(transport.getName(), name -> {
+        return new ArrayList<>();
+      });
+      list.add(transport);
+    }
+    return groups;
+  }
+
+  public Transport findTransport(String transportName) {
+    return transportMap.get(transportName);
+  }
 }

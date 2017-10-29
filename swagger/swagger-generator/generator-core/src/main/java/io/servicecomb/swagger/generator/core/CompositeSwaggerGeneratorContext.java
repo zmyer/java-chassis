@@ -20,39 +20,46 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringValueResolver;
 
 import io.servicecomb.foundation.common.utils.SPIServiceUtils;
 
 @Component
-public class CompositeSwaggerGeneratorContext {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CompositeSwaggerGeneratorContext.class);
+public class CompositeSwaggerGeneratorContext implements EmbeddedValueResolverAware {
+  private static final Logger LOGGER = LoggerFactory.getLogger(CompositeSwaggerGeneratorContext.class);
 
-    private List<SwaggerGeneratorContext> contextList;
+  private List<SwaggerGeneratorContext> contextList;
 
-    public CompositeSwaggerGeneratorContext() {
-        contextList = SPIServiceUtils.getAllService(SwaggerGeneratorContext.class);
+  public CompositeSwaggerGeneratorContext() {
+    contextList = SPIServiceUtils.getSortedService(SwaggerGeneratorContext.class);
 
-        contextList.sort((context1, context2) -> {
-            return context1.getOrder() - context2.getOrder();
-        });
+    for (SwaggerGeneratorContext context : contextList) {
+      LOGGER.info("Found swagger generator context: {}", context.getClass().getName());
+    }
+  }
 
-        for (SwaggerGeneratorContext context : contextList) {
-            LOGGER.info("Found swagger generator context: {}", context.getClass().getName());
-        }
+  @Override
+  public void setEmbeddedValueResolver(StringValueResolver resolver) {
+    for (SwaggerGeneratorContext context : contextList) {
+      if (EmbeddedValueResolverAware.class.isInstance(context)) {
+        ((EmbeddedValueResolverAware) context).setEmbeddedValueResolver(resolver);
+      }
+    }
+  }
+
+  public List<SwaggerGeneratorContext> getContextList() {
+    return contextList;
+  }
+
+  public SwaggerGeneratorContext selectContext(Class<?> cls) {
+    for (SwaggerGeneratorContext context : contextList) {
+      if (context.canProcess(cls)) {
+        return context;
+      }
     }
 
-    public List<SwaggerGeneratorContext> getContextList() {
-        return contextList;
-    }
-
-    public SwaggerGeneratorContext selectContext(Class<?> cls) {
-        for (SwaggerGeneratorContext context : contextList) {
-            if (context.canProcess(cls)) {
-                return context;
-            }
-        }
-
-        throw new Error("impossible, must be bug.");
-    }
+    throw new Error("impossible, must be bug.");
+  }
 }

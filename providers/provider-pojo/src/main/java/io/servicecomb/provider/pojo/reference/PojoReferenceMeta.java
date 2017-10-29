@@ -16,143 +16,74 @@
 
 package io.servicecomb.provider.pojo.reference;
 
-import io.servicecomb.core.CseContext;
-import io.servicecomb.core.definition.MicroserviceMeta;
-import io.servicecomb.core.definition.SchemaMeta;
-import io.servicecomb.core.provider.CseBeanPostProcessor.EmptyBeanPostProcessor;
-import io.servicecomb.core.provider.consumer.ReferenceConfig;
-import io.servicecomb.foundation.common.exceptions.ServiceCombException;
-import io.servicecomb.provider.pojo.Invoker;
-import io.servicecomb.swagger.engine.SwaggerConsumer;
 import java.lang.reflect.Proxy;
-import javax.inject.Inject;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.StringUtils;
 
-public class PojoReferenceMeta implements FactoryBean<Object>, InitializingBean, EmptyBeanPostProcessor {
-    // 原始数据
-    private String microserviceName;
+import io.servicecomb.foundation.common.exceptions.ServiceCombException;
+import io.servicecomb.provider.pojo.Invoker;
 
-    private String schemaId;
+public class PojoReferenceMeta implements FactoryBean<Object>, InitializingBean {
+  // 原始数据
+  private String microserviceName;
 
-    private Class<?> consumerIntf;
+  private String schemaId;
 
-    @Inject
-    private PojoConsumers pojoConsumers;
+  private Class<?> consumerIntf;
 
-    // 生成的数据
-    private ReferenceConfig referenceConfig;
+  // 根据intf创建出来的动态代理
+  // TODO:未实现本地优先(本地场景下，应该跳过handler机制)
+  private Object proxy;
 
-    private SchemaMeta schemaMeta;
+  public Object getProxy() {
+    return getObject();
+  }
 
-    private SwaggerConsumer swaggerConsumer;
+  @Override
+  public Object getObject() {
+    return proxy;
+  }
 
-    // 根据intf创建出来的动态代理
-    // TODO:未实现本地优先(本地场景下，应该跳过handler机制)
-    private Object proxy;
+  @Override
+  public Class<?> getObjectType() {
+    return consumerIntf;
+  }
 
-    private final Invoker invoker = new Invoker();
+  @Override
+  public boolean isSingleton() {
+    return true;
+  }
 
-    private void prepare() {
-        referenceConfig = CseContext.getInstance().getConsumerProviderManager().getReferenceConfig(microserviceName);
-        MicroserviceMeta microserviceMeta = referenceConfig.getMicroserviceMeta();
+  public void setConsumerIntf(Class<?> intf) {
+    this.consumerIntf = intf;
+  }
 
-        if (StringUtils.isEmpty(schemaId)) {
-            // 未指定schemaId，看看consumer接口是否等于契约接口
-            schemaMeta = microserviceMeta.findSchemaMeta(consumerIntf);
-            if (schemaMeta == null) {
-                // 尝试用consumer接口名作为schemaId
-                schemaId = consumerIntf.getName();
-                schemaMeta = microserviceMeta.ensureFindSchemaMeta(schemaId);
-            }
-        } else {
-            schemaMeta = microserviceMeta.ensureFindSchemaMeta(schemaId);
-        }
+  public void setMicroserviceName(String microserviceName) {
+    this.microserviceName = microserviceName;
+  }
 
-        if (consumerIntf == null) {
-            consumerIntf = schemaMeta.getSwaggerIntf();
-        }
+  public void setSchemaId(String schemaId) {
+    this.schemaId = schemaId;
+  }
 
-        this.swaggerConsumer = CseContext.getInstance().getSwaggerEnvironment().createConsumer(consumerIntf,
-                schemaMeta.getSwaggerIntf());
+  @Override
+  public void afterPropertiesSet() {
+    if (consumerIntf == null) {
+      throw new ServiceCombException(
+          String.format(
+              "microserviceName=%s, schemaid=%s, \n"
+                  + "do not support implicit interface anymore, \n"
+                  + "because that caused problems:\n"
+                  + "  1.the startup process relies on other microservices\n"
+                  + "  2.cyclic dependent microservices can not be deployed\n"
+                  + "suggest to use @RpcReference or "
+                  + "<cse:rpc-reference id=\"...\" microservice-name=\"...\" schema-id=\"...\" interface=\"...\"></cse:rpc-reference>.",
+              microserviceName,
+              schemaId));
     }
 
-    public void createInvoker() {
-        prepare();
-
-        invoker.init(getReferenceConfig(),
-                getSchemaMeta(),
-                swaggerConsumer);
-        createProxy();
-    }
-
-    protected void createProxy() {
-        if (proxy == null) {
-            proxy = Proxy.newProxyInstance(consumerIntf.getClassLoader(), new Class<?>[] {consumerIntf}, invoker);
-        }
-    }
-
-    public ReferenceConfig getReferenceConfig() {
-        return referenceConfig;
-    }
-
-    public Object getProxy() {
-        return getObject();
-    }
-
-    @Override
-    public Object getObject() {
-        if (proxy == null) {
-            throw new ServiceCombException(
-                String.format("Rpc reference %s with service name [%s] and schema [%s] is not populated",
-                  consumerIntf == null? "" : consumerIntf,
-                  microserviceName,
-                  schemaId
-                )
-            );
-        }
-        return proxy;
-    }
-
-    @Override
-    public Class<?> getObjectType() {
-        return consumerIntf;
-    }
-
-    public Class<?> getConsumerIntf() {
-        return consumerIntf;
-    }
-
-    @Override
-    public boolean isSingleton() {
-        return true;
-    }
-
-    public void setConsumerIntf(Class<?> intf) {
-        this.consumerIntf = intf;
-    }
-
-    public SchemaMeta getSchemaMeta() {
-        return schemaMeta;
-    }
-
-    public void setMicroserviceName(String microserviceName) {
-        this.microserviceName = microserviceName;
-    }
-
-    public void setSchemaId(String schemaId) {
-        this.schemaId = schemaId;
-    }
-
-    @Override
-    public void afterPropertiesSet() {
-        if (consumerIntf != null) {
-            createProxy();
-        }
-
-        if (pojoConsumers != null) {
-            pojoConsumers.addPojoReferenceMeta(this);
-        }
-    }
+    Invoker invoker = new Invoker(microserviceName, schemaId, consumerIntf);
+    proxy = Proxy.newProxyInstance(consumerIntf.getClassLoader(), new Class<?>[] {consumerIntf}, invoker);
+  }
 }

@@ -16,102 +16,152 @@
 
 package io.servicecomb.core.transport;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.message.BasicNameValuePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.netflix.config.DynamicPropertyFactory;
+
+import io.servicecomb.core.Const;
 import io.servicecomb.core.Endpoint;
 import io.servicecomb.core.Transport;
-import io.servicecomb.serviceregistry.RegistryUtils;
+import io.servicecomb.foundation.common.exceptions.ServiceCombException;
 import io.servicecomb.foundation.common.net.NetUtils;
 import io.servicecomb.foundation.common.net.URIEndpointObject;
 import io.servicecomb.foundation.vertx.VertxUtils;
-import com.netflix.config.DynamicPropertyFactory;
-
+import io.servicecomb.serviceregistry.RegistryUtils;
 import io.vertx.core.Vertx;
 
 public abstract class AbstractTransport implements Transport {
-    /**
-     * 用于参数传递：比如向RestServerVerticle传递endpoint地址。
-     */
-    public static final String ENDPOINT_KEY = "cse.endpoint";
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTransport.class);
 
-    private static final long DEFAULT_TIMEOUT_MILLIS = 30000;
+  /**
+   * 用于参数传递：比如向RestServerVerticle传递endpoint地址。
+   */
+  public static final String ENDPOINT_KEY = "cse.endpoint";
 
-    private static Long msReqeustTimeout = null;
+  private static final long DEFAULT_TIMEOUT_MILLIS = 30000;
 
-    public static long getRequestTimeout() {
-        if (msReqeustTimeout != null) {
-            return msReqeustTimeout;
-        }
+  private static Long msReqeustTimeout = null;
 
-        long msTimeout = DynamicPropertyFactory.getInstance()
-                .getLongProperty("cse.request.timeout", DEFAULT_TIMEOUT_MILLIS)
-                .get();
-        if (msTimeout <= 0) {
-            msTimeout = DEFAULT_TIMEOUT_MILLIS;
-        }
-
-        msReqeustTimeout = msTimeout;
-        return msReqeustTimeout;
+  public static long getRequestTimeout() {
+    if (msReqeustTimeout != null) {
+      return msReqeustTimeout;
     }
 
-    // 所有transport使用同一个vertx实例，避免创建太多的线程
-    protected Vertx transportVertx = VertxUtils.getOrCreateVertxByName("transport", null);
-
-    protected Endpoint endpoint;
-
-    protected Endpoint publishEndpoint;
-
-    @Override
-    public Endpoint getPublishEndpoint() {
-        return publishEndpoint;
+    long msTimeout = DynamicPropertyFactory.getInstance()
+        .getLongProperty("cse.request.timeout", DEFAULT_TIMEOUT_MILLIS)
+        .get();
+    if (msTimeout <= 0) {
+      msTimeout = DEFAULT_TIMEOUT_MILLIS;
     }
 
-    @Override
-    public Endpoint getEndpoint() throws Exception {
-        return endpoint;
+    msReqeustTimeout = msTimeout;
+    return msReqeustTimeout;
+  }
+
+  // 所有transport使用同一个vertx实例，避免创建太多的线程
+  protected Vertx transportVertx = VertxUtils.getOrCreateVertxByName("transport", null);
+
+  protected Endpoint endpoint;
+
+  protected Endpoint publishEndpoint;
+
+  @Override
+  public Endpoint getPublishEndpoint() {
+    return publishEndpoint;
+  }
+
+  @Override
+  public Endpoint getEndpoint() {
+    return endpoint;
+  }
+
+  protected void setListenAddressWithoutSchema(String addressWithoutSchema) {
+    setListenAddressWithoutSchema(addressWithoutSchema, null);
+  }
+
+  /**
+   * 将配置的URI转换为endpoint
+   * addressWithoutSchema 配置的URI，没有schema部分
+   */
+  protected void setListenAddressWithoutSchema(String addressWithoutSchema,
+      Map<String, String> pairs) {
+    addressWithoutSchema = genAddressWithoutSchema(addressWithoutSchema, pairs);
+
+    this.endpoint = new Endpoint(this, NetUtils.getRealListenAddress(getName(), addressWithoutSchema));
+    if (this.endpoint.getEndpoint() != null) {
+      this.publishEndpoint = new Endpoint(this, RegistryUtils.getPublishAddress(getName(),
+          addressWithoutSchema));
+    } else {
+      this.publishEndpoint = null;
+    }
+  }
+
+  private String genAddressWithoutSchema(String addressWithoutSchema, Map<String, String> pairs) {
+    if (addressWithoutSchema == null || pairs == null || pairs.isEmpty()) {
+      return addressWithoutSchema;
     }
 
-    protected void setListenAddressWithoutSchema(String addressWithoutSchema) {
-        setListenAddressWithoutSchema(addressWithoutSchema, null);
+    int idx = addressWithoutSchema.indexOf('?');
+    if (idx == -1) {
+      addressWithoutSchema += "?";
+    } else {
+      addressWithoutSchema += "&";
     }
 
-    /**
-     * 将配置的URI转换为endpoint
-     * addressWithoutSchema 配置的URI，没有schema部分
-     */
-    protected void setListenAddressWithoutSchema(String addressWithoutSchema,
-            Map<String, String> pairs) {
-        if (addressWithoutSchema != null && pairs != null && !pairs.isEmpty()) {
-            int idx = addressWithoutSchema.indexOf('?');
-            if (idx == -1) {
-                addressWithoutSchema += "?";
-            } else {
-                addressWithoutSchema += "&";
-            }
+    String encodedQuery = URLEncodedUtils.format(pairs.entrySet().stream().map(entry -> {
+      return new BasicNameValuePair(entry.getKey(), entry.getValue());
+    }).collect(Collectors.toList()), StandardCharsets.UTF_8.name());
 
-            StringBuilder sb = new StringBuilder();
-            for (Entry<String, String> entry : pairs.entrySet()) {
-                sb.append(entry.getKey()).append('=').append(entry.getValue()).append('&');
-            }
-            sb.setLength(sb.length() - 1);
-            addressWithoutSchema += sb.toString();
-        }
-        this.endpoint = new Endpoint(this, NetUtils.getRealListenAddress(getName(), addressWithoutSchema));
-        if (this.endpoint.getEndpoint() != null) {
-            this.publishEndpoint = new Endpoint(this, RegistryUtils.getPublishAddress(getName(), 
-                    addressWithoutSchema));
-        } else {
-            this.publishEndpoint = null;
-        }
-
+    if (!RegistryUtils.getServiceRegistry().getFeatures().isCanEncodeEndpoint()) {
+      addressWithoutSchema = genAddressWithoutSchemaForOldSC(addressWithoutSchema, encodedQuery);
+    } else {
+      addressWithoutSchema += encodedQuery;
     }
 
-    @Override
-    public Object parseAddress(String address) {
-        if (address == null) {
-            return null;
-        }
-        return new URIEndpointObject(address);
+    return addressWithoutSchema;
+  }
+
+  private String genAddressWithoutSchemaForOldSC(String addressWithoutSchema, String encodedQuery) {
+    // old service center do not support encodedQuery
+    // sdk must query service center's version, and determine if encode query
+    // traced by JAV-307
+    try {
+      LOGGER.warn("Service center do not support encoded query, so we use unencoded query, "
+          + "this caused not support chinese/space (and maybe other char) in query value.");
+      String decodedQuery = URLDecoder.decode(encodedQuery, StandardCharsets.UTF_8.name());
+      addressWithoutSchema += decodedQuery;
+    } catch (UnsupportedEncodingException e) {
+      // never happended
+      throw new ServiceCombException("Failed to decode query.", e);
     }
+
+    try {
+      // make sure consumer can handle this endpoint
+      new URI(Const.RESTFUL + "://" + addressWithoutSchema);
+    } catch (URISyntaxException e) {
+      throw new ServiceCombException(
+          "current service center not support encoded endpoint, please do not use chinese or space or anything need to be encoded.",
+          e);
+    }
+    return addressWithoutSchema;
+  }
+
+  @Override
+  public Object parseAddress(String address) {
+    if (address == null) {
+      return null;
+    }
+    return new URIEndpointObject(address);
+  }
 }
