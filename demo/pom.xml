@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright 2017 Huawei Technologies Co., Ltd
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
   ~
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~     http://www.apache.org/licenses/LICENSE-2.0
   ~
   ~ Unless required by applicable law or agreed to in writing, software
   ~ distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,13 +20,15 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.servicecomb</groupId>
+    <groupId>org.apache.servicecomb</groupId>
     <artifactId>java-chassis-parent</artifactId>
-    <version>0.4.0</version>
+    <version>0.6.0-SNAPSHOT</version>
     <relativePath>../parent</relativePath>
   </parent>
-  <groupId>io.servicecomb.demo</groupId>
+  <groupId>org.apache.servicecomb.demo</groupId>
   <artifactId>demo-parent</artifactId>
+  <name>Java Chassis::Demo</name>
+
   <packaging>pom</packaging>
   <modules>
     <module>docker-build-config</module>
@@ -34,7 +37,7 @@
     <module>demo-server-servlet</module>
     <module>demo-pojo</module>
     <module>demo-jaxrs</module>
-    <module>demo-perf-client</module>
+    
     <module>demo-springmvc</module>
     <module>demo-schema</module>
     <module>demo-crossapp</module>
@@ -44,74 +47,76 @@
     <module>demo-multiple</module>
     <module>demo-signature</module>
     <module>demo-edge</module>
+    
+    <module>perf</module>
   </modules>
 
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>io.servicecomb.demo</groupId>
+        <groupId>org.apache.servicecomb.demo</groupId>
         <artifactId>demo-signature</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb.demo</groupId>
+        <groupId>org.apache.servicecomb.demo</groupId>
         <artifactId>demo-schema</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb.demo</groupId>
+        <groupId>org.apache.servicecomb.demo</groupId>
         <artifactId>all-client</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb.demo</groupId>
+        <groupId>org.apache.servicecomb.demo</groupId>
         <artifactId>pojo-server</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb.demo</groupId>
+        <groupId>org.apache.servicecomb.demo</groupId>
         <artifactId>jaxrs-server</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb.demo</groupId>
+        <groupId>org.apache.servicecomb.demo</groupId>
         <artifactId>springmvc-server</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb.demo</groupId>
+        <groupId>org.apache.servicecomb.demo</groupId>
         <artifactId>crossapp-server</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb.demo</groupId>
+        <groupId>org.apache.servicecomb.demo</groupId>
         <artifactId>multiple-server</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb.demo</groupId>
+        <groupId>org.apache.servicecomb.demo</groupId>
         <artifactId>multiple-client</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb.demo</groupId>
+        <groupId>org.apache.servicecomb.demo</groupId>
         <artifactId>pojo-client</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb.demo</groupId>
+        <groupId>org.apache.servicecomb.demo</groupId>
         <artifactId>jaxrs-client</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb.demo</groupId>
+        <groupId>org.apache.servicecomb.demo</groupId>
         <artifactId>springmvc-client</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb.demo</groupId>
+        <groupId>org.apache.servicecomb.demo</groupId>
         <artifactId>crossapp-client</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -203,7 +208,7 @@
                 <configuration>
                   <property>root.dir</property>
                   <project>
-                    <groupId>io.servicecomb</groupId>
+                    <groupId>org.apache.servicecomb</groupId>
                     <artifactId>java-chassis</artifactId>
                   </project>
                 </configuration>

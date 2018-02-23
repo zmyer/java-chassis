@@ -1,11 +1,12 @@
 /*
- * Copyright 2017 Huawei Technologies Co., Ltd
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,11 +19,12 @@ package io.protostuff.runtime;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.servicecomb.foundation.common.utils.ReflectUtils;
+
 import io.protostuff.Input;
 import io.protostuff.Output;
 import io.protostuff.Pipe;
 import io.protostuff.WireFormat.FieldType;
-import io.servicecomb.foundation.common.utils.ReflectUtils;
 
 /**
  * protostuff实现protobuf逻辑时，关于map的编码与protobuf不兼容
@@ -82,7 +84,7 @@ public final class ProtobufCompatibleUtils {
         RuntimeMapField<T, Object, Object> runtimeMapField =
             (RuntimeMapField<T, Object, Object>) org.create(number, name, field, strategy);
 
-        return new RuntimeMapFieldProtobuf<T>(runtimeMapField, field);
+        return new RuntimeMapFieldProtobuf<>(runtimeMapField, field);
       }
     };
 

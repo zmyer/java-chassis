@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright 2017 Huawei Technologies Co., Ltd
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
   ~
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~     http://www.apache.org/licenses/LICENSE-2.0
   ~
   ~ Unless required by applicable law or agreed to in writing, software
   ~ distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,14 +20,21 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.servicecomb</groupId>
+  <parent>
+    <groupId>org.apache</groupId>
+    <artifactId>apache</artifactId>
+    <version>18</version>
+  </parent>
+
+
+  <groupId>org.apache.servicecomb</groupId>
   <artifactId>java-chassis</artifactId>
-  <version>0.4.0</version>
+  <version>0.6.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>ServiceComb Java Chassis</name>
   <description>Software Development Kit (SDK) for rapid development of microservices</description>
-  <url>https://github.com/ServiceComb/java-chassis</url>
+  <url>https://github.com/apache/incubator-servicecomb-java-chassis</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -40,17 +48,44 @@
     </license>
   </licenses>
 
+  <mailingLists>
+    <mailingList>
+      <name>Development List</name>
+      <subscribe>dev-subscribe@servicecomb.apache.org</subscribe>
+      <unsubscribe>dev-unsubscribe@servicecomb.apache.org</unsubscribe>
+      <post>dev@servicecomb.apache.org</post>
+    </mailingList>
+    <mailingList>
+      <name>Commits List</name>
+      <subscribe>commits-subscribe@servicecomb.apache.org</subscribe>
+      <unsubscribe>commits-unsubscribe@servicecomb.apache.org</unsubscribe>
+      <post>commits@servicecomb.apache.org</post>
+    </mailingList>
+  </mailingLists>
+
   <developers>
     <developer>
       <name>The ServiceComb Developer Team</name>
-      <email>dev@servicecomb.io</email>
+      <email>dev@servicecomb.apache.org</email>
     </developer>
   </developers>
 
+  <issueManagement>
+    <system>jira</system>
+    <url>https://issues.apache.org/jira/browse/SCB</url>
+  </issueManagement>
+
+  <organization>
+    <name>The Apache Software Foundation</name>
+    <url>http://www.apache.org/</url>
+  </organization>
+
+  <inceptionYear>2017</inceptionYear>
+
   <scm>
-    <url>https://github.com/ServiceComb/java-chassis</url>
-    <connection>scm:git:https://github.com/ServiceComb/java-chassis.git</connection>
-    <developerConnection>scm:git:https://github.com/ServiceComb/java-chassis.git</developerConnection>
+    <url>https://github.com/apache/incubator-servicecomb-java-chassis</url>
+    <connection>scm:git:https://github.com/apache/incubator-servicecomb-java-chassis.git</connection>
+    <developerConnection>scm:git:https://github.com/apache/incubator-servicecomb-java-chassis.git</developerConnection>
     <tag>v${project.version}</tag>
   </scm>
 
@@ -68,18 +103,9 @@
     <module>spring-boot-starter</module>
     <module>tracing</module>
     <module>edge</module>
+    <module>metrics</module>
+    <module>dynamic-config</module>
   </modules>
-
-  <distributionManagement>
-    <repository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
-    <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-  </distributionManagement>
 
   <profiles>
     <profile>
@@ -90,28 +116,7 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-deploy-plugin</artifactId>
         </plugin>
-        <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.7</version>
-	    <executions>
-             <execution>
-               <id>default-deploy</id>
-               <phase>deploy</phase>
-               <goals>
-                 <goal>deploy</goal>
-               </goals>
-             </execution>
-            </executions>
-            <extensions>true</extensions>
-            <configuration>
-              <serverId>ossrh</serverId>
-              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-              <autoReleaseAfterClose>false</autoReleaseAfterClose>
-              <skipLocalStaging>true</skipLocalStaging>
-            </configuration>
-        </plugin>  
-	<plugin>
+	      <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
             <version>1.6</version>
@@ -184,10 +189,40 @@
         <module>coverage-reports</module>
       </modules>
     </profile>
+    <profile>
+      <id>samples</id>
+      <modules>
+        <module>samples</module>
+      </modules>
+    </profile>
   </profiles>
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>DISCLAIMER</exclude>
+            <exclude>.travis.yml</exclude>
+            <exclude>**/*.md</exclude>
+            <excldue>**/*.MD</excldue>
+            <exclude>**/target/*</exclude>
+            <!-- Skip the ssl configuration files -->
+            <exculde>**/resources/ssl/**</exculde>
+            <!-- Skip the protobuf files -->
+            <exclude>**/*.proto</exclude>
+            <!-- Skip the idl files -->
+            <exclude>**/*.idl</exclude>
+            <!-- Skip the demo log files -->
+            <exclude>**/logs/**.log</exclude>
+            <!-- Skip the source files which are copied from vertx -->
+            <exclude>**/io/vertx/ext/web/impl/MimeTypesUtils.java</exclude>
+            <exclude>**/java/org/apache/servicecomb/transport/rest/vertx/RestBodyHandler.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
@@ -203,7 +238,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.18.1</version>
         <configuration>
           <skip>${maven.test.skip}</skip>
           <testFailureIgnore>${maven.test.failure.ignore}</testFailureIgnore>
@@ -223,6 +257,18 @@
           <findbugsXmlWithMessages>true</findbugsXmlWithMessages>
           <xmlOutput>true</xmlOutput>
           <excludeFilterFile>findbugs-exclude.xml</excludeFilterFile>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+            </manifest>
+          </archive>
         </configuration>
       </plugin>
     </plugins>

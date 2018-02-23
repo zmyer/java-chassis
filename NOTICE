@@ -1,11 +1,104 @@
-Copyright 2017 Huawei Technologies Co., Ltd
- 
+Apache ServiceComb
+Copyright 2018 The Apache Software Foundation
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
+
+
+================================================================
+The 2-Clause BSD License
+================================================================
+
+The following components are provided under the  The BSD License  (http://www.opensource.org/licenses/bsd-license.php). See project link for details.
+
+Stax2 API (http://wiki.fasterxml.com/WoodstoxStax2) org.codehaus.woodstox:stax2-api:bundle:3.1.4
+
+================================================================
+Eclipse Public License 1.0
+================================================================
+
+The following components are provided under the  Eclipse Public License - v 1.0  (http://www.eclipse.org/legal/epl-v10.html). See project link for details.
+
+AspectJ weaver (http://www.aspectj.org) org.aspectj:aspectjweaver:jar:1.8.8
+Logback Core Module (http://logback.qos.ch/logback-core) ch.qos.logback:logback-core:jar:1.1.7
+Logback Classic Module (http://logback.qos.ch/logback-classic) ch.qos.logback:logback-classic:jar:1.1.7
+
+================================================================
+COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.1
+================================================================
+
+The following components are provided under the  CDDL 1.1  (https://javaee.github.io/glassfish/LICENSE). See project link for details.
+
+jersey-core (https://jersey.java.net/jersey-core/) com.sun.jersey:jersey-core:jar:1.19.1
+Jersey Apache HTTP Client 4.x (https://jersey.java.net/jersey-contribs/jersey-apache-client4/) com.sun.jersey.contribs:jersey-apache-client4:jar:1.19.1
+javax.ws.rs-api (http://jax-rs-spec.java.net) javax.ws.rs:javax.ws.rs-api:jar:2.0.1
+jersey-client (https://jersey.java.net/jersey-client/) com.sun.jersey:jersey-client:jar:1.19.1
+Java Servlet API (http://servlet-spec.java.net) javax.servlet:javax.servlet-api:jar:3.1.0
+
+================================================================
+Public Domain
+================================================================
+
+The following components are provided under the  Public Domain, per Creative Commons CC0  (http://creativecommons.org/publicdomain/zero/1.0/). See project link for details.
+
+HdrHistogram (http://hdrhistogram.github.io/HdrHistogram/) org.hdrhistogram:HdrHistogram:bundle:2.1.9
+
+================================================================
+The MIT License
+================================================================
+
+The following components are provided under the  Bouncy Castle Licence  (http://www.bouncycastle.org/licence.html). See project link for details.
+
+Bouncy Castle PKIX, CMS, EAC, TSP, PKCS, OCSP, CMP, and CRMF APIs (http://www.bouncycastle.org/java.html) org.bouncycastle:bcpkix-jdk15on:jar:1.55
+Bouncy Castle Provider (http://www.bouncycastle.org/java.html) org.bouncycastle:bcprov-jdk15on:jar:1.55
+JUL to SLF4J bridge (http://www.slf4j.org) org.slf4j:jul-to-slf4j:jar:1.7.24
+SLF4J API Module (http://www.slf4j.org) org.slf4j:slf4j-api:jar:1.7.7
+JCL 1.2 implemented over SLF4J (http://www.slf4j.org) org.slf4j:jcl-over-slf4j:jar:1.7.24
+
+================================================================
+Common Development and Distribution License 1.0
+================================================================
+
+The following components are provided under the  CDDL License  (http://www.opensource.org/licenses/cddl1.php). See project link for details.
+
+jsr311-api (https://jsr311.dev.java.net) javax.ws.rs:jsr311-api:jar:1.1.1
+
+================================================================
+The 3-Clause BSD License
+================================================================
+
+The following components are provided under the  BSD  (http://asm.objectweb.org/license.html). See project link for details.
+
+ASM Core (http://asm.objectweb.org/asm/) org.ow2.asm:asm:jar:5.0.4
+
+================================================================
+For foundations/foundation-vertx/src/main/java/io/vertx/ext/web/impl/MimeTypesUtils.java
+(Forked from https://github.com/vert-x3/vertx-web/blob/927ed057ddc028eb09a168db621de3d72fd85ed4/vertx-web/src/main/java/io/vertx/ext/web/impl/Utils.java)
+
+Copyright 2014 Red Hat, Inc.
+
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Eclipse Public License v1.0
+ and Apache License v2.0 which accompanies this distribution.
+
+ The Eclipse Public License is available at
+ http://www.eclipse.org/legal/epl-v10.html
+
+ The Apache License v2.0 is available at
+ http://www.opensource.org/licenses/apache2.0.php
+
+ You may elect to redistribute this code under either of these licenses.
+
+================================================================
+For swagger/swagger-generator/generator-core/src/main/java/org/apache/servicecomb/swagger/extend/property/AbstractBaseIntegerProperty.java
+(Forked from https://github.com/swagger-api/swagger-core/blob/master/modules/swagger-models/src/main/java/io/swagger/models/properties/IntegerProperty.java)
+
+Copyright 2016 SmartBear Software
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
- 
-   http://www.apache.org/licenses/LICENSE-2.0
- 
+You may obtain a copy of the License at [apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -13,323 +106,37 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ================================================================
-Dependencies:
+For transports/transport-rest/transport-rest-vertx/src/main/java/org/apache/servicecomb/transport/rest/vertx/RestBodyHandler.java
+(Forked from https://github.com/vert-x3/vertx-web/blob/master/vertx-web/src/main/java/io/vertx/ext/web/handler/impl/BodyHandlerImpl.java)
 
-Software:HornetQ	2.2.21	
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://hornetq.jboss.org
+Copyright 2014 Red Hat, Inc.
 
-Software:JSON in JavaScript	20111019	
-  * LICENSE:
-    * http://www.thepublicdomain.org/
-  * HOMEPAGE:
-    * http://www.json.org/
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Eclipse Public License v1.0
+ and Apache License v2.0 which accompanies this distribution.
 
-Software:jqplot	1.0.8r1250	
-  * LICENSE:
-    * http://mit-license.org/
-  * HOMEPAGE:
-    * http://jqplot.org/
-	
-Software:Hibernate Validator	4.3.1	
-License:Apache License Version 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://hibernate.org/validator
+ The Eclipse Public License is available at
+ http://www.eclipse.org/legal/epl-v10.html
 
-Software:Jackson	1.9.2	
-License:Apache License Version 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://jackson.codehaus.org/
+ The Apache License v2.0 is available at
+ http://www.opensource.org/licenses/apache2.0.php
 
-Software:Apache Jakarta Commons DBCP	2.0.1	
-License:Apache License Version 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://commons.apache.org/
+ You may elect to redistribute this code under either of these licenses.
 
-Software:Apache Jakarta Commons IO	2.4	
-License:Apache License Version 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://commons.apache.org/
-	
-Software:Eclipse AspectJ	1.8.5	
-License:Mozilla Public License Version 1.1
-  * LICENSE:
-    * http://www.mozilla.org/en-US/MPL/1.1
-  * HOMEPAGE:
-    * http://www.eclipse.org/aspectj/
-	
-Software:Java Persistence API	2.0.0	
-License:EPL V1.0
-  * LICENSE:
-    * http://www.eclipse.org/legal/epl-v10.html
-  * HOMEPAGE:
-    * http://www.oracle.com/technetwork/java/javaee/tech/
+================================================================
+For handlers/handler-bizkeeper/src/main/java/org/apache/servicecomb/bizkeeper/HystrixCommandPropertiesExt.java
+(Forked from https://github.com/Netflix/Hystrix/blob/master/hystrix-core/src/main/java/com/netflix/hystrix/HystrixCommandProperties.java)
 
-Software:JBoss - Javassist	3.18.1-GA	
-License:LGPL V2.1;Apache License Version 2.0
-  * LICENSE:
-    * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html  http://www.apache.org/licenses/LICENSE-2.0 
-  * HOMEPAGE:
-    * https://github.com/jboss-javassist/javassist/tree/3.18
-	
-Software:kazoo	2.1	
-License:Apache License Version 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://kazoo.readthedocs.io/
+   Copyright 2012 Netflix, Inc.
 
-Software:lua-cjson	2.1.0	
-License:MIT License
-  * LICENSE:
-    * http://mit-license.org/
-  * HOMEPAGE:
-    * https://luarocks.org/
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-Software:LuaJIT	2.0.4	
-License:MIT License V2
-  * LICENSE:
-    * http://mit-license.org/
-  * HOMEPAGE:
-    * http://luarocks.org/
-	
-Software:mybatis	3.2.7	
-License:Apache License Version 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://www.mybatis.org/mybatis-3/
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Software:mybatis-spring	1.2.0	
-License:Apache License Version 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://www.mybatis.org/
-	
-Software:fuzzy	0.1.1 	
-License:MIT
-  * LICENSE:
-    * http://mit-license.org/
-  * HOMEPAGE:
-    * http://pypi.python.org/pypi/
-	
-Software:lodash	4.11.1	
-License:MIT
-  * LICENSE:
-    * http://mit-license.org/
-  * HOMEPAGE:
-    * https://lodash.com/
-	
-Software:angular.js	1.4.8	
-License:MIT
-  * LICENSE:
-    * http://mit-license.org/
-  * HOMEPAGE:
-    * https://angularjs.org/
-	
-Software:Node.js	4.4.6	
-License:MIT
-  * LICENSE:
-    * http://mit-license.org/
-  * HOMEPAGE:
-    * https://node.js.org/
-	
-Software:redux	3.4.0	
-License:MIT
-  * LICENSE:
-    * http://mit-license.org/
-  * HOMEPAGE:
-    * http://redux.js.org/
-	
-Software:camelcase	2.1.1	
-License:MIT
-  * LICENSE:
-    * http://mit-license.org/
-  * HOMEPAGE:
-    * http://www.camelcase.com/
-	
-Software:normalize.css	4.0.0	
-License:MIT
-  * LICENSE:
-    * http://mit-license.org/
-  * HOMEPAGE:
-    * http://necolas.github.io/normalize.css/
-
-Software:Apache Curator 	2.8.0	
-License:Apache License Version 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://curator.apache.org/
-	
-Software:okhttp	3.4.1	
-License:Apache License 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://square.github.io/okhttp/
-	
-Software:spring cloud sleuth	1.0.1.RELEASE	
-License:Apache License Version 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://www.spring.io/
-
-Software:spring cloud stream	1.0.0.RELEASE	
-License:Apache License 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://www.spring.io/
-	
-Software:protostuff	1.0.7	
-License:Apache License Version 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://www.protostuff.io/
-	
-Software:jsoup	1.8.3	
-License:MIT License
-  * LICENSE:
-    * http://mit-license.org/
-  * HOMEPAGE:
-    * http://jsoup.org/
-	
-Software:restlet-framework-java	2.2.1	
-License:Apache License Version 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * https://github.com/restlet/restlet-framework-java
-	
-Software:rxjava  	1.1.6	
-License:Apache License 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://reactive.io/
-
-Software:netflix-commons 	0.1.1	
-License:Apache License 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * https://github.com/Netflix/netflix-commons
-
-Software:PyYAML - a YAML parser and emitter for Python	3.11	
-License:MIT License
-  * LICENSE:
-    * http://mit-license.org/
-  * HOMEPAGE:
-    * https://pypi.python.org/pypi/PyYAML/
-	
-Software:six	1.10.0	
-License:MIT License
-  * LICENSE:
-    * http://mit-license.org/
-  * HOMEPAGE:
-    * https://pypi.python.org/pypi/six/
-	
-Software:HttpAsyncClient	4.1.2	
-License:Apache License Version 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://hc.apache.org/httpcomponents-asyncclient-dev/index.html
-
-Software:spring cloud starter zuul	1.1.0RELEASE	
-License:Apache License Version 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://www.spring.io/
-	
-Software:Hibernate Validator	5.3.2.Final	
-License:Apache License Version 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://hibernate.org/validator
-
-Software:HttpComponents Core	4.4.4	
-License:Apache License Version 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://hc.apache.org/
-
-Software:react-router	2.8.1	
-License:The MIT License
-  * LICENSE:
-    * http://mit-license.org/
-  * HOMEPAGE:
-    * https://www.npmjs.com/package/react-router/
-
-Software:react-router-redux	4.0.7	
-License:The MIT License
-  * LICENSE:
-    * http://mit-license.org/
-  * HOMEPAGE:
-    * https://www.npmjs.com/package/react-router-redux/
-	
-Software:Jetty - Java HTTP Servlet Server	Jetty - Java HTTP Servlet Server 9.2.21	
-License:Apache License 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://jetty.mortbay.org
-
-Software:cal10n-api	0.8.1	
-License:Apache License 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://cal10.qos.ch/
-	
-Software:protostuff	1.5.2	
-License:Apache License 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://www.protostuff.io/
-	
-Software:Spring Cloud Commons	1.1.0.RELEASE	
-License:Apache License Version 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://www.spring.io/
-	
-Software:vis	4.17.0	
-License:Apache License 2.0 & The MIT License
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0   http://mit-license.org/
-  * HOMEPAGE:
-    * http://visjs.org/
-	
-Software:Apache Tomcat	7.0.75	
-License:Apache License 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://tomcat.apache.org/
-
-Software:fastjson 	1.2.29	
-License:Apache License 2.0
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0  
-  * HOMEPAGE:
-    * http://code.alibabatech.com/wiki/fastjson
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.

@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright 2017 Huawei Technologies Co., Ltd
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
   ~
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~     http://www.apache.org/licenses/LICENSE-2.0
   ~
   ~ Unless required by applicable law or agreed to in writing, software
   ~ distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,21 +21,23 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>io.servicecomb</groupId>
+    <groupId>org.apache.servicecomb</groupId>
     <artifactId>java-chassis</artifactId>
-    <version>0.4.0</version>
+    <version>0.6.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>java-chassis-dependencies</artifactId>
+  <name>Java Chassis::Dependencies</name>
   <packaging>pom</packaging>
 
   <properties>
-    <jackson.version>2.8.10</jackson.version>
-    <vertx.version>3.3.3</vertx.version>
+    <jackson.version>2.9.2</jackson.version>
+    <vertx.version>3.5.0</vertx.version>
     <tec.zkclient.version>0.8</tec.zkclient.version>
     <spring.version>4.3.5.RELEASE</spring.version>
     <slf4j.version>1.7.7</slf4j.version>
     <log4j.version>1.2.17</log4j.version>
+    <log4j2.version>2.8.2</log4j2.version>
     <commons.io.version>2.4</commons.io.version>
     <javassist.version>3.18.1-GA</javassist.version>
     <javax.ws.rs.version>2.0.1</javax.ws.rs.version>
@@ -42,14 +45,14 @@
     <apache.httpclient>4.5.2</apache.httpclient>
     <protostuff.version>1.5.2</protostuff.version>
     <swagger.version>1.5.12</swagger.version>
-    <netty.version>4.1.5.Final</netty.version>
+    <netty.version>4.1.17.Final</netty.version>
     <main.basedir>${basedir}/../..</main.basedir>
     <narayana.version>5.3.2.Final</narayana.version>
     <cxf.version>3.1.6</cxf.version>
     <logback.version>1.1.7</logback.version>
-    <brave.version>4.4.0</brave.version>
-    <zipkin.version>1.24.0</zipkin.version>
-    <zipkin-reporter.version>0.10.0</zipkin-reporter.version>
+    <brave.version>4.13.1</brave.version>
+    <zipkin.version>2.4.2</zipkin.version>
+    <zipkin-reporter.version>2.2.2</zipkin-reporter.version>
   </properties>
 
   <dependencyManagement>
@@ -341,6 +344,12 @@
         <groupId>com.netflix.servo</groupId>
         <artifactId>servo-core</artifactId>
         <version>0.10.1</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>annotations</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>com.google.inject</groupId>
@@ -411,6 +420,12 @@
         <groupId>com.netflix.archaius</groupId>
         <artifactId>archaius-core</artifactId>
         <version>0.7.3</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>annotations</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>com.google.code.findbugs</groupId>
@@ -519,6 +534,16 @@
         <version>${log4j.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-api</artifactId>
+        <version>${log4j2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
+        <version>${log4j2.version}</version>
+      </dependency>
+      <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>${commons.io.version}</version>
@@ -580,16 +605,6 @@
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
-        <artifactId>spring-web</artifactId>
-        <version>${spring.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-webmvc</artifactId>
-        <version>${spring.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
         <artifactId>spring-jdbc</artifactId>
         <scope>provided</scope>
         <optional>true</optional>
@@ -644,9 +659,16 @@
 
       <!-- zipkin dependencies -->
       <dependency>
+        <groupId>io.zipkin.zipkin2</groupId>
+        <artifactId>zipkin</artifactId>
+        <version>${zipkin.version}</version>
+      </dependency>
+      <dependency>
+        <!-- only needed in test phase for mocking brave -->
         <groupId>io.zipkin.java</groupId>
         <artifactId>zipkin</artifactId>
         <version>${zipkin.version}</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>io.zipkin.brave</groupId>
@@ -659,7 +681,7 @@
         <version>${brave.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.zipkin.reporter</groupId>
+        <groupId>io.zipkin.reporter2</groupId>
         <artifactId>zipkin-sender-okhttp3</artifactId>
         <version>${zipkin-reporter.version}</version>
       </dependency>
@@ -690,35 +712,56 @@
       </dependency>
 
       <dependency>
-        <groupId>io.servicecomb</groupId>
-        <artifactId>foundation-common</artifactId>
-        <version>0.4.0</version>
+        <groupId>io.prometheus</groupId>
+        <artifactId>simpleclient</artifactId>
+        <version>0.1.0</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>io.prometheus</groupId>
+        <artifactId>simpleclient_httpserver</artifactId>
+        <version>0.1.0</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.servicecomb</groupId>
+        <artifactId>foundation-common</artifactId>
+        <version>0.6.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>foundation-test-scaffolding</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>foundation-ssl</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>foundation-config</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
+	<artifactId>config-cc</artifactId>
+	<version>0.6.0-SNAPSHOT</version>
+	</dependency>
+      <dependency>
+        <groupId>org.apache.servicecomb</groupId>
+        <artifactId>config-apollo</artifactId>
+        <version>0.6.0-SNAPSHOT</version>
+      </dependency>
+	<dependency>
+	<groupId>org.apache.servicecomb</groupId>
         <artifactId>foundation-vertx</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>foundation-metrics</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -756,169 +799,194 @@
         <version>${swagger.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>java-chassis-core</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>handler-bizkeeper</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>handler-loadbalance</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>handler-flowcontrol-qps</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
+        <artifactId>handler-publickey-auth</artifactId>
+        <version>0.6.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>common-rest</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>transport-rest-client</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>transport-rest-vertx</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>transport-rest-servlet</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>common-protobuf</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>common-javassist</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>swagger-generator-core</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>swagger-generator-jaxrs</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>swagger-generator-springmvc</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>swagger-invocation-core</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>swagger-invocation-jaxrs</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>swagger-invocation-springmvc</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>service-registry</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>provider-pojo</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>provider-rest-common</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>provider-jaxrs</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>provider-springmvc</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>transport-highway</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>spring-boot-starter-configuration</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>spring-boot-starter-servicecomb</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>spring-boot-starter-provider</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>spring-boot-starter-discovery</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
+        <artifactId>spring-boot-starter-registry</artifactId>
+        <version>0.6.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>spring-boot-starter-transport</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>spring-cloud-zuul</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>spring-cloud-zuul-zipkin</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>handler-tracing-zipkin</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>tracing-common</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>tracing-zipkin</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.servicecomb</groupId>
+        <groupId>org.apache.servicecomb</groupId>
         <artifactId>edge-core</artifactId>
-        <version>0.4.0</version>
+        <version>0.6.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.servicecomb</groupId>
+        <artifactId>metrics-core</artifactId>
+        <version>0.6.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.servicecomb</groupId>
+        <artifactId>metrics-common</artifactId>
+        <version>0.6.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.servicecomb</groupId>
+        <artifactId>metrics-prometheus</artifactId>
+        <version>0.6.0-SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

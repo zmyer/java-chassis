@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 <!--
-  ~ Copyright 2017 Huawei Technologies Co., Ltd
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
   ~
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~     http://www.apache.org/licenses/LICENSE-2.0
   ~
   ~ Unless required by applicable law or agreed to in writing, software
   ~ distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,11 +20,12 @@
   xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.servicecomb</groupId>
+    <groupId>org.apache.servicecomb</groupId>
     <artifactId>transport-rest</artifactId>
-    <version>0.4.0</version>
+    <version>0.6.0-SNAPSHOT</version>
   </parent>
   <artifactId>transport-rest-servlet</artifactId>
+  <name>Java Chassis::Transports::Rest::Servlet</name>
 
   <dependencies>
     <dependency>
@@ -33,10 +35,10 @@
 
     <dependency>
       <groupId>org.springframework</groupId>
-      <artifactId>spring-web</artifactId>
+      <artifactId>spring-webmvc</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.servicecomb</groupId>
+      <groupId>org.apache.servicecomb</groupId>
       <artifactId>transport-rest-client</artifactId>
     </dependency>
 
@@ -51,7 +53,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>io.servicecomb</groupId>
+      <groupId>org.apache.servicecomb</groupId>
       <artifactId>foundation-test-scaffolding</artifactId>
     </dependency>
   </dependencies>

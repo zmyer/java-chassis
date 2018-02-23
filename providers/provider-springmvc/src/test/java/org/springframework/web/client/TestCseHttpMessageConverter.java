@@ -1,11 +1,12 @@
 /*
- * Copyright 2017 Huawei Technologies Co., Ltd
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,15 +19,14 @@ package org.springframework.web.client;
 
 import java.io.IOException;
 
+import org.apache.servicecomb.provider.common.MockUtil;
+import org.apache.servicecomb.provider.springmvc.reference.CseClientHttpRequest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
-
-import io.servicecomb.provider.common.MockUtil;
-import io.servicecomb.provider.springmvc.reference.CseClientHttpRequest;
 
 public class TestCseHttpMessageConverter {
 
@@ -39,13 +39,12 @@ public class TestCseHttpMessageConverter {
     lCseHttpMessageConverter.getSupportedMediaTypes();
     try {
       lCseHttpMessageConverter.read(this.getClass(), null);
-    } catch (HttpMessageNotReadableException e) {
-    } catch (IOException e) {
+    } catch (HttpMessageNotReadableException | IOException ignored) {
     }
     try {
       HttpOutputMessage httpOutputMessage = Mockito.mock(CseClientHttpRequest.class);
       lCseHttpMessageConverter.write(null, null, httpOutputMessage);
-    } catch (HttpMessageNotWritableException | IOException e) {
+    } catch (HttpMessageNotWritableException | IOException ignored) {
     }
 
     Assert.assertEquals(true, lCseHttpMessageConverter.canRead(null, null));
